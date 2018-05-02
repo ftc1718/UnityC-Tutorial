@@ -25,19 +25,34 @@ struct Interpolators
 	float2 uv : TEXCOORD0;		
 	float3 normal : TEXCOORD1;	
 	float3 worldPos : TEXCOORD2;	
+
+	#if defined(VERTEXLIGHT_ON)
+		float3 vertexLightColor : TEXCOORD3;
+	#endif
 };
 
-Interpolators vert(vertexData v)
+void ComputeVertexLightColor(inout Interpolators i)
 {
-	Interpolators i;
-	i.position = UnityObjectToClipPos(v.position);
-	i.worldPos = mul(unity_ObjectToWorld, v.position);
-	i.uv = v.uv * _MainTex_ST.xy + _MainTex_ST.zw;
-	i.normal = UnityObjectToWorldNormal(v.normal);
-	return i;
+	#if defined(VERTEXLIGHT_ON)
+		// float3 lightPos = float3(
+		// 	unity_4LightPosX0.x, unity_4LightPosY0.x, unity_4LightPosZ0.x
+		// );
+		// float3 lightDir = normalize(lightPos - i.worldPos);
+		// float ndotl = DotClamped(lightDir, i.normal);
+		// float attenuation = 1 / (1 + dot(lightDir, lightDir));
+
+		// i.vertexLightColor = unity_LightColor[0].rgb * ndotl * attenuation;
+
+		i.vertexLightColor = Shade4PointLights(
+			unity_4LightPosX0, unity_4LightPosY0, unity_4LightPosZ0,
+			unity_LightColor[0].rgb, unity_LightColor[1].rgb,
+			unity_LightColor[2].rgb, unity_LightColor[3].rgb,
+			unity_4LightAtten0, i.worldPos, i.normal
+		);
+	#endif
 }
 
-UnityLight CreateLight (Interpolators i)
+UnityLight CreateLight(Interpolators i)
 {
 	UnityLight light;
 
@@ -52,6 +67,31 @@ UnityLight CreateLight (Interpolators i)
 	light.ndotl = DotClamped(i.normal, light.dir);
 	return light;
 }
+
+UnityIndirect CreateIndirectLight(Interpolators i)
+{
+	UnityIndirect indirectLight;
+	indirectLight.diffuse = 0;
+	indirectLight.specular = 0;
+
+	#if defined(VERTEXLIGHT_ON)
+		indirectLight.diffuse = i.vertexLightColor;
+	#endif
+
+	return indirectLight;
+}
+
+Interpolators vert(vertexData v)
+{
+	Interpolators i;
+	i.position = UnityObjectToClipPos(v.position);
+	i.worldPos = mul(unity_ObjectToWorld, v.position);
+	i.uv = v.uv * _MainTex_ST.xy + _MainTex_ST.zw;
+	i.normal = UnityObjectToWorldNormal(v.normal);
+	ComputeVertexLightColor(i);
+	return i;
+}
+
 
 float4 frag(Interpolators i) : SV_TARGET
 {
@@ -69,15 +109,11 @@ float4 frag(Interpolators i) : SV_TARGET
 		albedo, _Metallic, specularTint, oneMinusReflectivity
 	);
 
-	UnityIndirect indirectLight;
-	indirectLight.diffuse = 0;
-	indirectLight.specular = 0;
-
 	return UNITY_BRDF_PBS(
 		albedo, specularTint, 
 		oneMinusReflectivity, _Smoothness,
 		i.normal, viewDir,
-		CreateLight(i), indirectLight
+		CreateLight(i), CreateIndirectLight(i)
 	);
 }
 
