@@ -8,6 +8,9 @@ float4 _Tint;
 sampler2D _MainTex;
 float4 _MainTex_ST;
 
+sampler2D _HeightMap;
+float4 _HeightMap_TexelSize;
+
 float _Smoothness;
 // float4 _SpecularTint;
 float _Metallic;
@@ -85,6 +88,34 @@ UnityIndirect CreateIndirectLight(Interpolators i)
 	return indirectLight;
 }
 
+void InitializeFragmnetNormal(inout Interpolators i)
+{
+// 	float2 delta = float2(_HeightMap_TexelSize.x, 0);
+// 	float h1 = tex2D(_HeightMap, i.uv);
+// 	float h2 = tex2D(_HeightMap, i.uv + delta);
+// 	// i.normal = float3(1, (h2 - h1) / delta.x, 0); // i.normal = float3(delta.x, h2 - h1, 0); // too steep, replace delta.x to 1
+// 	// i.normal = float3(1, h2 - h1, 0);
+// 	i.normal = float3(h1 - h2, 1, 0);//rotate the tangent 90 degree around Z axis
+
+	//use two tangents to create normal(height)
+	float2 du = float2(_HeightMap_TexelSize.x * 0.5, 0); // another way to caculate f'u
+	float u1 = tex2D(_HeightMap, i.uv - du);
+	float u2 = tex2D(_HeightMap, i.uv + du);
+	// float3 tu = float3(1, u2 - u1, 0);
+	// rotate the tangent 90 degree around Z axis to an upward-pointing normal to get right lighting
+	// float3 tu = float3(u1 - u2, 1, 0); 
+
+	float2 dv = float2(_HeightMap_TexelSize.y * 0.5, 0); // another way to caculate f'v
+	float v1 = tex2D(_HeightMap, i.uv - dv);
+	float v2 = tex2D(_HeightMap, i.uv + dv);
+	// float3 tv = float3(0, v2 - v1, 1);
+	// i.normal = float3(0, 1, v1- v2); // rotate the tangent -90 degree around X axis
+
+	// i.normal = cross(tv, tu);
+	i.normal = float3(u1 - u2, 1, v1 - v2);
+	i.normal = normalize(i.normal);
+}
+
 Interpolators vert(vertexData v)
 {
 	Interpolators i;
@@ -99,10 +130,12 @@ Interpolators vert(vertexData v)
 
 float4 frag(Interpolators i) : SV_TARGET
 {
-	i.normal = normalize(i.normal);
+	InitializeFragmnetNormal(i);
+	
 	float3 viewDir = normalize(_WorldSpaceCameraPos - i.worldPos);
 
 	float3 albedo = tex2D(_MainTex, i.uv).rgb * _Tint.rgb;
+	// albedo *= tex2D(_HeightMap, i.uv);
 
 	/* caculate the diffuse(albedo) and the reflect(spcular) simplest metallic workflow */
 	// float3 specularTint = albedo * _Metallic;
