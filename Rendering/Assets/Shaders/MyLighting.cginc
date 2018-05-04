@@ -8,8 +8,11 @@ float4 _Tint;
 sampler2D _MainTex;
 float4 _MainTex_ST;
 
-sampler2D _NormalMap;
-float _BumpScale;
+sampler2D _DetailTex;
+float4 _DetailTex_ST;
+
+sampler2D _NormalMap, _DetailNormalMap;
+float _BumpScale, _DetailBumpScale;
 
 float _Smoothness;
 // float4 _SpecularTint;
@@ -25,7 +28,7 @@ struct vertexData
 struct Interpolators
 {
 	float4 position : SV_POSITION;
-	float2 uv : TEXCOORD0;		
+	float4 uv : TEXCOORD0;		
 	float3 normal : TEXCOORD1;	
 	float3 worldPos : TEXCOORD2;	
 
@@ -93,7 +96,9 @@ void InitializeFragmnetNormal(inout Interpolators i)
 	// i.normal.xy = tex2D(_NormalMap, i.uv).wy * 2 - 1;
 	// i.normal.xy *= _BumpScale;
 	// i.normal.z = sqrt(1 - saturate(dot(i.normal.xy, i.normal.xy)));
-	i.normal = UnpackScaleNormal(tex2D(_NormalMap, i.uv), _BumpScale);
+	float3 mainNormal = UnpackScaleNormal(tex2D(_NormalMap, i.uv.xy), _BumpScale);
+	float3 detailNormal = UnpackScaleNormal(tex2D(_DetailNormalMap, i.uv.zw), _DetailBumpScale);
+	i.normal = (mainNormal + detailNormal) * 0.5;
 	i.normal = normalize(i.normal.xzy);
 }
 
@@ -102,12 +107,14 @@ Interpolators vert(vertexData v)
 	Interpolators i;
 	i.position = UnityObjectToClipPos(v.position);
 	i.worldPos = mul(unity_ObjectToWorld, v.position);
-	i.uv = v.uv * _MainTex_ST.xy + _MainTex_ST.zw;
+	i.uv.xy = TRANSFORM_TEX(v.uv, _MainTex);
+	i.uv.zw = TRANSFORM_TEX(v.uv, _DetailTex);
+	// i.uv.xy = v.uv * _MainTex_ST.xy + _MainTex_ST.zw;
+	// i.uv.zw = v.uv * _DetailTex_ST.xy + _DetailTex_ST.zw;
 	i.normal = UnityObjectToWorldNormal(v.normal);
 	ComputeVertexLightColor(i);
 	return i;
 }
-
 
 float4 frag(Interpolators i) : SV_TARGET
 {
@@ -115,8 +122,8 @@ float4 frag(Interpolators i) : SV_TARGET
 	
 	float3 viewDir = normalize(_WorldSpaceCameraPos - i.worldPos);
 
-	float3 albedo = tex2D(_MainTex, i.uv).rgb * _Tint.rgb;
-	// albedo *= tex2D(_HeightMap, i.uv);
+	float3 albedo = tex2D(_MainTex, i.uv.xy).rgb * _Tint.rgb;
+	albedo *= tex2D(_DetailTex, i.uv.zw) * unity_ColorSpaceDouble;
 
 	/* caculate the diffuse(albedo) and the reflect(spcular) simplest metallic workflow */
 	// float3 specularTint = albedo * _Metallic;
