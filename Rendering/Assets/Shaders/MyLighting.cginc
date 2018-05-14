@@ -98,8 +98,14 @@ void InitializeFragmnetNormal(inout Interpolators i)
 	// i.normal.z = sqrt(1 - saturate(dot(i.normal.xy, i.normal.xy)));
 	float3 mainNormal = UnpackScaleNormal(tex2D(_NormalMap, i.uv.xy), _BumpScale);
 	float3 detailNormal = UnpackScaleNormal(tex2D(_DetailNormalMap, i.uv.zw), _DetailBumpScale);
-	i.normal = (mainNormal + detailNormal) * 0.5;
+	/*
+	// i.normal = float3(mainNormal.xy / mainNormal.z + detailNormal.xy / detailNormal.z, 1);
+	i.normal = float3(mainNormal.xy + detailNormal.xy, mainNormal.z * detailNormal.z); // whiteout blending
 	i.normal = normalize(i.normal.xzy);
+	*/
+	// use unity buildin function
+	i.normal = BlendNormals(mainNormal, detailNormal);
+	i.normal = i.normal.xzy;
 }
 
 Interpolators vert(vertexData v)
