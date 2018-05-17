@@ -30,12 +30,19 @@ struct Interpolators
 {
 	float4 position : SV_POSITION;
 	float4 uv : TEXCOORD0;		
-	float3 normal : TEXCOORD1;	
-	float4 tangent: TEXCOORD2;
-	float3 worldPos : TEXCOORD3;	
+	float3 normal : TEXCOORD1;
+
+	#if defined(BINORMAL_PER_FRAGMENT)	
+		float4 tangent: TEXCOORD2;
+	#else
+		float3 tangent : TEXCOORD2;
+		float3 binormal : TEXCOORD3;
+	#endif
+
+	float3 worldPos : TEXCOORD4;	
 
 	#if defined(VERTEXLIGHT_ON)
-		float3 vertexLightColor : TEXCOORD4;
+		float3 vertexLightColor : TEXCOORD5;
 	#endif
 };
 
@@ -93,6 +100,11 @@ UnityIndirect CreateIndirectLight(Interpolators i)
 	return indirectLight;
 }
 
+float3 CreateBinormal(float3 normal, float3 tangent, float binormalSign)
+{
+	return cross(normal, tangent) * (binormalSign, unity_WorldTransformParams.w);
+}
+
 void InitializeFragmnetNormal(inout Interpolators i)
 {
 	// i.normal.xy = tex2D(_NormalMap, i.uv).wy * 2 - 1;
@@ -110,7 +122,12 @@ void InitializeFragmnetNormal(inout Interpolators i)
 	tangentSpaceNormal = tangentSpaceNormal.xzy;
 
 	// initialize binormal
-	float3 binormal = cross(i.normal, i.tangent.xyz) * (i.tangent.w, unity_WorldTransformParams.w);
+	#if defined(BINORMAL_PER_FRAGMENT)
+		float3 binormal = CreateBinormal(i.normal, i.tangent.xyz, i.tangent.w);
+	#else
+		float3 binormal = i.binormal;
+	#endif
+
 	i.normal = normalize(
 		tangentSpaceNormal.x * i.tangent + 
 		tangentSpaceNormal.y * i.normal +
@@ -123,12 +140,20 @@ Interpolators vert(vertexData v)
 	Interpolators i;
 	i.position = UnityObjectToClipPos(v.position);
 	i.worldPos = mul(unity_ObjectToWorld, v.position);
+	i.normal = UnityObjectToWorldNormal(v.normal);
+
+	#if defined(BINORMAL_PER_FRAGMENT)
+		i.tangent = float4(UnityObjectToWorldDir(v.tangent.xyz), v.tangent.w);
+	#else
+		i.tangent = UnityObjectToWorldDir(v.tangent.xyz);
+		i.binormal = CreateBinormal(i.normal, i.tangent, v.tangent.w);
+	#endif
+
 	i.uv.xy = TRANSFORM_TEX(v.uv, _MainTex);
 	i.uv.zw = TRANSFORM_TEX(v.uv, _DetailTex);
 	// i.uv.xy = v.uv * _MainTex_ST.xy + _MainTex_ST.zw;
 	// i.uv.zw = v.uv * _DetailTex_ST.xy + _DetailTex_ST.zw;
-	i.normal = UnityObjectToWorldNormal(v.normal);
-	i.tangent = float4(UnityObjectToWorldDir(v.tangent.xyz), v.tangent.w);
+
 	ComputeVertexLightColor(i);
 	return i;
 }

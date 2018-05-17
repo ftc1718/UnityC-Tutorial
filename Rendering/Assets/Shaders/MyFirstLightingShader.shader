@@ -24,6 +24,8 @@ Shader "Custom/MyFirstLightingShader"
 			}
 			CGPROGRAM
 
+//			#define BINORMAL_PER_FRAGMENT
+
 			#pragma target 3.0
 
 			#pragma multi_compile _ VERTEXLIGHT_ON
