@@ -22,7 +22,7 @@ Shader "Custom/MyFirstShader"
 			sampler2D _MainTex;
 			float4 _MainTex_ST;
 
-			struct vertexData
+			struct VertexData
 			{
 				float4 position : POSITION;
 				float2 uv : TEXCOORD0;
@@ -34,7 +34,7 @@ Shader "Custom/MyFirstShader"
 				float2 uv : TEXCOORD0;				
 			};
 
-			Interpolators vert(vertexData v)
+			Interpolators vert(VertexData v)
 			{
 				Interpolators i;
 				i.position = UnityObjectToClipPos(v.position);

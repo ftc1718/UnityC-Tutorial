@@ -18,7 +18,7 @@ float _Smoothness;
 // float4 _SpecularTint;
 float _Metallic;
 
-struct vertexData
+struct VertexData
 {
 	float4 position : POSITION;
 	float3 normal : NORMAL;
@@ -39,10 +39,14 @@ struct Interpolators
 		float3 binormal : TEXCOORD3;
 	#endif
 
-	float3 worldPos : TEXCOORD4;	
+	float3 worldPos : TEXCOORD4;
+
+	#if defined(SHADOWS_SCREEN)
+		float4 shadowCoordinates : TEXCOORD5;
+	#endif	
 
 	#if defined(VERTEXLIGHT_ON)
-		float3 vertexLightColor : TEXCOORD5;
+		float3 vertexLightColor : TEXCOORD6;
 	#endif
 };
 
@@ -77,7 +81,12 @@ UnityLight CreateLight(Interpolators i)
 		light.dir = _WorldSpaceLightPos0.xyz;
 	#endif
 
-	UNITY_LIGHT_ATTENUATION(attenuation, 0, i.worldPos);
+	#if defined(SHADOWS_SCREEN)
+		float attenuation = tex2D(_ShadowMapTexture, i.shadowCoordinates.xy / i.shadowCoordinates.w);
+	#else
+		UNITY_LIGHT_ATTENUATION(attenuation, 0, i.worldPos);
+	#endif
+
 	light.color = _LightColor0.rgb * attenuation;
 	light.ndotl = DotClamped(i.normal, light.dir);
 	return light;
@@ -135,7 +144,7 @@ void InitializeFragmnetNormal(inout Interpolators i)
 	);
 }
 
-Interpolators vert(vertexData v)
+Interpolators vert(VertexData v)
 {
 	Interpolators i;
 	i.position = UnityObjectToClipPos(v.position);
@@ -153,6 +162,12 @@ Interpolators vert(vertexData v)
 	i.uv.zw = TRANSFORM_TEX(v.uv, _DetailTex);
 	// i.uv.xy = v.uv * _MainTex_ST.xy + _MainTex_ST.zw;
 	// i.uv.zw = v.uv * _DetailTex_ST.xy + _DetailTex_ST.zw;
+
+	#if defined(SHADOWS_SCREEN)
+		// i.shadowCoordinates.xy = (i.position.xy + i.position.w) * 0.5;
+		i.shadowCoordinates.xy = (float2(i.position.x, -i.position.y) + i.position.w) * 0.5;
+		i.shadowCoordinates.zw = i.position.zw;
+	#endif
 
 	ComputeVertexLightColor(i);
 	return i;

@@ -26,7 +26,7 @@ Shader "Custom/TextureSplitting"
 
 			sampler2D _Texture1, _Texture2, _Texture3, _Texture4;
 
-			struct vertexData
+			struct VertexData
 			{
 				float4 position : POSITION;
 				float2 uv : TEXCOORD0;
@@ -39,7 +39,7 @@ Shader "Custom/TextureSplitting"
 				float2 uvSplat : TEXCOORD1;				
 			};
 
-			Interpolators vert(vertexData v)
+			Interpolators vert(VertexData v)
 			{
 				Interpolators i;
 				i.position = UnityObjectToClipPos(v.position);

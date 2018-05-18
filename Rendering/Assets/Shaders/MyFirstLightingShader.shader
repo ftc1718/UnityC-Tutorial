@@ -24,16 +24,17 @@ Shader "Custom/MyFirstLightingShader"
 			}
 			CGPROGRAM
 
-//			#define BINORMAL_PER_FRAGMENT
+			// #define BINORMAL_PER_FRAGMENT
 
 			#pragma target 3.0
 
 			#pragma multi_compile _ VERTEXLIGHT_ON
+			#pragma multi_compile _ SHADOWS_SCREEN
 
 			#pragma vertex vert
 			#pragma fragment frag
 
-	//		#define FORWARD_BASE_PASS
+			// #define FORWARD_BASE_PASS
 
 			#include "MyLighting.cginc"
 
@@ -61,6 +62,24 @@ Shader "Custom/MyFirstLightingShader"
 
 			#include "MyLighting.cginc"
 			
+			ENDCG
+		}
+
+		pass
+		{
+			Tags
+			{
+				"LightMode" = "ShadowCaster"
+			}
+
+			CGPROGRAM
+
+			#pragma target 3.0
+
+			#pragma vertex vert
+			#pragma fragment frag
+
+			#include "MyShadows.cginc"
 			ENDCG
 		}
 	}

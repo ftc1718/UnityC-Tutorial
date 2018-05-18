@@ -23,7 +23,7 @@ Shader "Custom/TexturedWithDetail"
 			sampler2D _MainTex, _DetailTex;
 			float4 _MainTex_ST, _DetailTex_ST;
 
-			struct vertexData
+			struct VertexData
 			{
 				float4 position : POSITION;
 				float2 uv : TEXCOORD0;
@@ -36,7 +36,7 @@ Shader "Custom/TexturedWithDetail"
 				float2 uvDetail : TEXCOORD1;
 			};
 
-			Interpolators vert(vertexData v)
+			Interpolators vert(VertexData v)
 			{
 				Interpolators i;
 				i.position = UnityObjectToClipPos(v.position);
