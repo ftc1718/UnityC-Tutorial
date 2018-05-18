@@ -96,7 +96,7 @@ UnityLight CreateLight(Interpolators i)
 	return light;
 }
 
-UnityIndirect CreateIndirectLight(Interpolators i)
+UnityIndirect CreateIndirectLight(Interpolators i, float3 viewDir)
 {
 	UnityIndirect indirectLight;
 	indirectLight.diffuse = 0;
@@ -108,6 +108,10 @@ UnityIndirect CreateIndirectLight(Interpolators i)
 
 	#if defined(FORWARD_BASE_PASS)
 		indirectLight.diffuse += max(0, ShadeSH9(float4(i.normal, 1)));
+		float3 reflectionDir = reflect(-viewDir, i.normal);
+		float roughness = 1 - _Smoothness;
+		float4 envSample = UNITY_SAMPLE_TEXCUBE_LOD(unity_SpecCube0, reflectionDir, roughness * UNITY_SPECCUBE_LOD_STEPS);
+		indirectLight.specular = DecodeHDR(envSample, unity_SpecCube0_HDR);
 	#endif
 
 	return indirectLight;
@@ -115,7 +119,7 @@ UnityIndirect CreateIndirectLight(Interpolators i)
 
 float3 CreateBinormal(float3 normal, float3 tangent, float binormalSign)
 {
-	return cross(normal, tangent) * (binormalSign, unity_WorldTransformParams.w);
+	return cross(normal, tangent.xyz) * (binormalSign, unity_WorldTransformParams.w);
 }
 
 void InitializeFragmnetNormal(inout Interpolators i)
@@ -201,7 +205,7 @@ float4 frag(Interpolators i) : SV_TARGET
 		albedo, specularTint, 
 		oneMinusReflectivity, _Smoothness,
 		i.normal, viewDir,
-		CreateLight(i), CreateIndirectLight(i)
+		CreateLight(i), CreateIndirectLight(i, viewDir)
 	);
 }
 

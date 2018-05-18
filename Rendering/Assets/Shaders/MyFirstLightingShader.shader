@@ -34,7 +34,7 @@ Shader "Custom/MyFirstLightingShader"
 			#pragma vertex vert
 			#pragma fragment frag
 
-			// #define FORWARD_BASE_PASS
+			#define FORWARD_BASE_PASS
 
 			#include "MyLighting.cginc"
 
