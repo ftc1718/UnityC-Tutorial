@@ -55,7 +55,7 @@ Shader "Custom/MyFirstLightingShader"
 
 			#pragma target 3.0
 
-			#pragma multi_compile_fwdadd
+			#pragma multi_compile_fwdadd_fullshadows
 
 			#pragma vertex vert
 			#pragma fragment frag
