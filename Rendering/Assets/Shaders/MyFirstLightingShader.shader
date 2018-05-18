@@ -76,6 +76,8 @@ Shader "Custom/MyFirstLightingShader"
 
 			#pragma target 3.0
 
+			#pragma multi_compile_shadowcaster
+
 			#pragma vertex vert
 			#pragma fragment frag
 

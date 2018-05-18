@@ -1,8 +1,8 @@
 ﻿#ifndef MY_LIGHTING_INCLUDE
 #define MY_LIGHTING_INCLUDE
 
-#include "AutoLight.cginc"
 #include "UnityPBSLighting.cginc"
+#include "AutoLight.cginc"
 
 float4 _Tint;
 sampler2D _MainTex;
