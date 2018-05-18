@@ -20,7 +20,8 @@ float _Metallic;
 
 struct VertexData
 {
-	float4 position : POSITION;
+	// float4 position : POSITION;
+	float4 vertex : POSITION;
 	float3 normal : NORMAL;
 	float4 tangent : TANGENT;
 	float2 uv : TEXCOORD0;
@@ -28,7 +29,8 @@ struct VertexData
 
 struct Interpolators
 {
-	float4 position : SV_POSITION;
+	// float4 position : SV_POSITION;
+	float4 pos: SV_POSITION;
 	float4 uv : TEXCOORD0;		
 	float3 normal : TEXCOORD1;
 
@@ -41,9 +43,10 @@ struct Interpolators
 
 	float3 worldPos : TEXCOORD4;
 
-	#if defined(SHADOWS_SCREEN)
-		float4 shadowCoordinates : TEXCOORD5;
-	#endif	
+	// #if defined(SHADOWS_SCREEN)
+	// 	float4 shadowCoordinates : TEXCOORD5;
+	// #endif	
+	SHADOW_COORDS(5)
 
 	#if defined(VERTEXLIGHT_ON)
 		float3 vertexLightColor : TEXCOORD6;
@@ -81,11 +84,12 @@ UnityLight CreateLight(Interpolators i)
 		light.dir = _WorldSpaceLightPos0.xyz;
 	#endif
 
-	#if defined(SHADOWS_SCREEN)
-		float attenuation = tex2D(_ShadowMapTexture, i.shadowCoordinates.xy / i.shadowCoordinates.w);
-	#else
-		UNITY_LIGHT_ATTENUATION(attenuation, 0, i.worldPos);
-	#endif
+	// #if defined(SHADOWS_SCREEN)
+	// 	// float attenuation = tex2D(_ShadowMapTexture, i.shadowCoordinates.xy / i.shadowCoordinates.w);
+	// 	float attenuation = SHADOW_ATTENUATION(i);
+	// #else
+		UNITY_LIGHT_ATTENUATION(attenuation, i, i.worldPos);
+	// #endif
 
 	light.color = _LightColor0.rgb * attenuation;
 	light.ndotl = DotClamped(i.normal, light.dir);
@@ -147,8 +151,8 @@ void InitializeFragmnetNormal(inout Interpolators i)
 Interpolators vert(VertexData v)
 {
 	Interpolators i;
-	i.position = UnityObjectToClipPos(v.position);
-	i.worldPos = mul(unity_ObjectToWorld, v.position);
+	i.pos = UnityObjectToClipPos(v.vertex);
+	i.worldPos = mul(unity_ObjectToWorld, v.vertex);
 	i.normal = UnityObjectToWorldNormal(v.normal);
 
 	#if defined(BINORMAL_PER_FRAGMENT)
@@ -163,11 +167,13 @@ Interpolators vert(VertexData v)
 	// i.uv.xy = v.uv * _MainTex_ST.xy + _MainTex_ST.zw;
 	// i.uv.zw = v.uv * _DetailTex_ST.xy + _DetailTex_ST.zw;
 
-	#if defined(SHADOWS_SCREEN)
-		// i.shadowCoordinates.xy = (i.position.xy + i.position.w) * 0.5;
-		i.shadowCoordinates.xy = (float2(i.position.x, -i.position.y) + i.position.w) * 0.5;
-		i.shadowCoordinates.zw = i.position.zw;
-	#endif
+	// #if defined(SHADOWS_SCREEN)
+	// 	// // i.shadowCoordinates.xy = (i.position.xy + i.position.w) * 0.5;
+	// 	// i.shadowCoordinates.xy = (float2(i.position.x, -i.position.y) + i.position.w) * 0.5;
+	// 	// i.shadowCoordinates.zw = i.position.zw;
+	// 	i.shadowCoordinates = ComputeScreenPos(i.position);
+	// #endif
+	TRANSFER_SHADOW(i);
 
 	ComputeVertexLightColor(i);
 	return i;
