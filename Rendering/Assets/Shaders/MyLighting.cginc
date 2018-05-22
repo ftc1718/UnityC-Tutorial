@@ -96,6 +96,23 @@ UnityLight CreateLight(Interpolators i)
 	return light;
 }
 
+//reflection direction; the position sampling from(object position); cubemapPosition; the boundary of cubemapBox;
+float3 BoxProjection(float3 direction, float3 position,
+	float3 cubemapPositon, float3 boxMin, float3 boxMax)
+{
+	// boxMin -= position;
+	// boxMax -= position;
+	// float x = (direction.x > 0 ? boxMax.x : boxMin.x) / direction.x;
+	// float y = (direction.y > 0 ? boxMax.y : boxMin.y) / direction.y;
+	// float z = (direction.z > 0 ? boxMax.z : boxMin.z) / direction.z;
+	// float scalar = min(min(x, y), z);
+
+	float3 factors = ((direction > 0 ? boxMax : boxMin) - position) / direction;
+	float scalar = min(min(factors.x, factors.y), factors.z);
+
+	return direction * scalar + (position - cubemapPositon);
+}
+
 UnityIndirect CreateIndirectLight(Interpolators i, float3 viewDir)
 {
 	UnityIndirect indirectLight;
@@ -115,7 +132,11 @@ UnityIndirect CreateIndirectLight(Interpolators i, float3 viewDir)
 
 		Unity_GlossyEnvironmentData envData;
 		envData.roughness = 1 - _Smoothness;
-		envData.reflUVW = reflectionDir;
+		envData.reflUVW = BoxProjection(
+			reflectionDir, i.worldPos,
+			unity_SpecCube0_ProbePosition,
+			unity_SpecCube0_BoxMin, unity_SpecCube0_BoxMax
+		);
 		indirectLight.specular = Unity_GlossyEnvironment(
 			UNITY_PASS_TEXCUBE(unity_SpecCube0), unity_SpecCube0_HDR, envData
 		);
