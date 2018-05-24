@@ -6,9 +6,9 @@ Material:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
-  m_Name: Lighting
-  m_Shader: {fileID: 4800000, guid: 95afe2c67ca061b4f8aeff2df5a95a4e, type: 3}
-  m_ShaderKeywords: _METALLIC_MAP _SMOOTHNESS_METALLIC
+  m_Name: Lava
+  m_Shader: {fileID: 4800000, guid: 507e5419769c64e00932f47c2307f9fa, type: 3}
+  m_ShaderKeywords: _SMOOTHNESS_ALBEDO
   m_LightmapFlags: 1
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -36,18 +36,14 @@ Material:
         m_Offset: {x: 0, y: 0}
     - _DetailTex:
         m_Texture: {fileID: 0}
-        m_Scale: {x: 10, y: 10}
+        m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _EmissionMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - _HeightMap:
-        m_Texture: {fileID: 2800000, guid: d38a4f30d413745adaf12f60ca54997d, type: 3}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: e1da8e445bfb4274aa76add2a7d242f7, type: 3}
+        m_Texture: {fileID: 2800000, guid: 8ca517e16c5d50443831748635573ddc, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
@@ -55,11 +51,11 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicMap:
-        m_Texture: {fileID: 2800000, guid: 9be27d312f7f3ed4daed1f767531e377, type: 3}
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _NormalMap:
-        m_Texture: {fileID: 2800000, guid: df86b252068048344b9b0b8e91ed906c, type: 3}
+        m_Texture: {fileID: 2800000, guid: ea98acf7f3bbffc418c03cb65324a0cb, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _OcclusionMap:
@@ -73,16 +69,14 @@ Material:
     m_Floats:
     - _BumpScale: 1
     - _Cutoff: 0.5
-    - _DetailBumpScale: 0.3
+    - _DetailBumpScale: 1
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
-    - _Metallic: 1
+    - _Metallic: 0
     - _Mode: 0
-    - _NormalBump: 0.25
-    - _NormalScale: 0.25
     - _OcclusionStrength: 1
     - _Parallax: 0.02
     - _Smoothness: 1
@@ -94,6 +88,4 @@ Material:
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _Specular: {r: 0.5, g: 0.5, b: 0.5, a: 1}
-    - _SpecularTint: {r: 0.5, g: 0.5, b: 0.5, a: 1}
     - _Tint: {r: 1, g: 1, b: 1, a: 1}

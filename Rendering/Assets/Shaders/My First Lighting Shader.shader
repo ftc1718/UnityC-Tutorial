@@ -1,9 +1,6 @@
-﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+﻿Shader "Custom/My First Lighting Shader" {
 
-Shader "Custom/MyFirstLightingShader"
-{
-	Properties
-	{
+	Properties {
 		_Tint ("Tint", Color) = (1, 1, 1, 1)
 		_MainTex ("Albedo", 2D) = "white" {}
 
@@ -12,7 +9,7 @@ Shader "Custom/MyFirstLightingShader"
 
 		[NoScaleOffset] _MetallicMap ("Metallic", 2D) = "white" {}
 		[Gamma] _Metallic ("Metallic", Range(0, 1)) = 0
-		_Smoothness ("Smoothness", Range(0, 1)) = 0.5
+		_Smoothness ("Smoothness", Range(0, 1)) = 0.1
 
 		_DetailTex ("Detail Albedo", 2D) = "gray" {}
 		[NoScaleOffset] _DetailNormalMap ("Detail Normals", 2D) = "bump" {}
@@ -25,38 +22,35 @@ Shader "Custom/MyFirstLightingShader"
 
 	ENDCG
 
-	SubShader
-	{
-		Pass
-		{
-			Tags
-			{
+	SubShader {
+
+		Pass {
+			Tags {
 				"LightMode" = "ForwardBase"
 			}
+
 			CGPROGRAM
 
 			#pragma target 3.0
 
-			#pragma multi_compile _ VERTEXLIGHT_ON
-			#pragma multi_compile _ SHADOWS_SCREEN
-
 			#pragma shader_feature _METALLIC_MAP
 			#pragma shader_feature _ _SMOOTHNESS_ALBEDO _SMOOTHNESS_METALLIC
 
-			#pragma vertex vert
-			#pragma fragment frag
+			#pragma multi_compile _ SHADOWS_SCREEN
+			#pragma multi_compile _ VERTEXLIGHT_ON
+
+			#pragma vertex MyVertexProgram
+			#pragma fragment MyFragmentProgram
 
 			#define FORWARD_BASE_PASS
 
-			#include "MyLighting.cginc"
+			#include "My Lighting.cginc"
 
 			ENDCG
 		}
 
-		Pass
-		{
-			Tags
-			{
+		Pass {
+			Tags {
 				"LightMode" = "ForwardAdd"
 			}
 
@@ -67,40 +61,38 @@ Shader "Custom/MyFirstLightingShader"
 
 			#pragma target 3.0
 
+			#pragma shader_feature _METALLIC_MAP
+			#pragma shader_feature _ _SMOOTHNESS_ALBEDO _SMOOTHNESS_METALLIC
+
 			#pragma multi_compile_fwdadd_fullshadows
-
-			#pragma shader_feature _METALLIC_MAP		
-			#pragma shader_feature _ _SMOOTHNESS_ALBEDO _SMOOTHNESS_METALLIC							
-
-			#pragma vertex vert
-			#pragma fragment frag
-
-			#include "MyLighting.cginc"
 			
+			#pragma vertex MyVertexProgram
+			#pragma fragment MyFragmentProgram
+
+			#include "My Lighting.cginc"
+
 			ENDCG
 		}
 
-		pass
-		{
-			Tags
-			{
-				"LightMode" = "ShadowCaster"
-			}
+		// Pass {
+		// 	Tags {
+		// 		"LightMode" = "ShadowCaster"
+		// 	}
 
-			CGPROGRAM
+		// 	CGPROGRAM
 
-			#pragma target 3.0
+		// 	#pragma target 3.0
 
-			#pragma multi_compile_shadowcaster
+		// 	#pragma multi_compile_shadowcaster
 
-			#pragma vertex vert
-			#pragma fragment frag
+		// 	#pragma vertex MyShadowVertexProgram
+		// 	#pragma fragment MyShadowFragmentProgram
 
-			#include "MyShadows.cginc"
-			ENDCG
-		}
+		// 	#include "My Shadows.cginc"
+
+		// 	ENDCG
+		// }
 	}
 
 	CustomEditor "MyLightingShaderGUI"
-	
 }

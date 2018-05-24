@@ -66,11 +66,13 @@ float GetMetallic(Interpolators i)
 
 float GetSmoothness(Interpolators i)
 {
-	#if defined(_METALLIC_MAP)
-		return tex2D(_MetallicMap, i.uv.xy).a * _Smoothness;
-	#else
-		return _Smoothness;
+	float smoothness = 1;
+	#if defined(_SMOOTHNESS_ALBEDO)
+		smoothness = tex2D(_MainTex, i.uv.xy).a;
+	#elif defined(_SMOOTHNESS_METALLIC) && defined(_METALLIC_MAP)
+		smoothness = tex2D(_MetallicMap, i.uv.xy).a;
 	#endif
+		return smoothness * _Smoothness;
 }
 
 void ComputeVertexLightColor(inout Interpolators i)
@@ -206,7 +208,7 @@ void InitializeFragmnetNormal(inout Interpolators i)
 	***/
 	// use unity buildin function
 	float3 tangentSpaceNormal = BlendNormals(mainNormal, detailNormal);
-	tangentSpaceNormal = tangentSpaceNormal.xzy;
+	// tangentSpaceNormal = tangentSpaceNormal.xzy;
 
 	// initialize binormal
 	#if defined(BINORMAL_PER_FRAGMENT)
@@ -217,8 +219,8 @@ void InitializeFragmnetNormal(inout Interpolators i)
 
 	i.normal = normalize(
 		tangentSpaceNormal.x * i.tangent + 
-		tangentSpaceNormal.y * i.normal +
-		tangentSpaceNormal.z * binormal
+		tangentSpaceNormal.y * binormal +
+		tangentSpaceNormal.z * i.normal
 	);
 }
 

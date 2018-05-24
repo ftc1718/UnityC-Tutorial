@@ -59,6 +59,12 @@ public class MyLightingShaderGUI : ShaderGUI
         return staticLabel;
     }
 
+	//Suppot for undo
+	void RecordAction(string label)
+	{
+        editor.RegisterPropertyChangeUndo(label);
+    }
+
 	void DoMain()
 	{
         GUILayout.Label("Main Maps", EditorStyles.boldLabel);
@@ -124,6 +130,7 @@ public class MyLightingShaderGUI : ShaderGUI
         source = (SmoothnessSource)EditorGUILayout.EnumPopup(MakeLabel("Source"), source);
 		if(EditorGUI.EndChangeCheck())
 		{
+            RecordAction("Smoothness Source");
             SetKeyword("_SMOOTHNESS_ALBEDO", source == SmoothnessSource.Albedo);
             SetKeyword("_SMOOTHNESS_METALLIC", source == SmoothnessSource.Metallic);
         }
