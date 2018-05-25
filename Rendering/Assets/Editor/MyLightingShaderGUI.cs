@@ -29,11 +29,17 @@ public class MyLightingShaderGUI : ShaderGUI
 	{
 		if(state)
 		{
-            target.EnableKeyword(keyword);
+            foreach(Material m in editor.targets)
+            {
+                m.EnableKeyword(keyword);
+            }
         }
 		else
 		{
-            target.DisableKeyword(keyword);
+            foreach(Material m in editor.targets)
+            {
+                m.DisableKeyword(keyword);
+            }            
         }
 	}
 
@@ -90,10 +96,16 @@ public class MyLightingShaderGUI : ShaderGUI
 	void DoNormals()
 	{
         MaterialProperty normalMap = FindProperty("_NormalMap");
+        Texture tex = normalMap.textureValue;
+        EditorGUI.BeginChangeCheck();
         editor.TexturePropertySingleLine(
 			MakeLabel(normalMap), normalMap,
-			normalMap.textureValue ? FindProperty("_BumpScale") : null
+			tex ? FindProperty("_BumpScale") : null
 		);
+        if(EditorGUI.EndChangeCheck() && tex != normalMap.textureValue)
+        {
+            SetKeyword("_NORMAL_MAP", normalMap.textureValue);
+        }
     }
 
 	void DoMetallic()
@@ -189,21 +201,31 @@ public class MyLightingShaderGUI : ShaderGUI
 		GUILayout.Label("Secondary Maps", EditorStyles.boldLabel);
 
         MaterialProperty detailTex = FindProperty("_DetailTex");
+        EditorGUI.BeginChangeCheck();
         editor.TexturePropertySingleLine(
 			MakeLabel(detailTex, "Albedo (RGB) multiplied by 2"), detailTex
 		);
+        if(EditorGUI.EndChangeCheck())
+        {
+            SetKeyword("_DETAIL_ALBEDO_MAP", detailTex.textureValue);
+        }
 
         DoSecondaryNormals();
         editor.TextureScaleOffsetProperty(detailTex);
 	}
 
 	void DoSecondaryNormals()
-	{
+	{        
 		MaterialProperty normalMap = FindProperty("_DetailNormalMap");
+        EditorGUI.BeginChangeCheck();        
         editor.TexturePropertySingleLine(
 			MakeLabel(normalMap), normalMap, 
-			normalMap.textureValue ? FindProperty("_DetailBumpScale") : null
+			normalMap.textureValue ? FindProperty("_DetailBumpScale") : null        
 		);
+        if(EditorGUI.EndChangeCheck())
+        {
+            SetKeyword("_DETAIL_NORMAL_MAP", normalMap.textureValue);
+        }
 	}
 
 }

@@ -74,8 +74,10 @@ float GetDetailMask(Interpolators i)
 float3 GetAlbedo(Interpolators i)
 {
 	float3 albedo = tex2D(_MainTex, i.uv.xy).rgb * _Tint.rgb;
-	float detail = tex2D(_DetailTex, i.uv.zw) * unity_ColorSpaceDouble;
-	albedo = lerp(albedo, albedo * detail, GetDetailMask(i));
+	#if defined(_DETAIL_ALBEDO_MAP)
+		float detail = tex2D(_DetailTex, i.uv.zw) * unity_ColorSpaceDouble;
+		albedo = lerp(albedo, albedo * detail, GetDetailMask(i));
+	#endif
 	return albedo;
 }
 
@@ -119,6 +121,22 @@ float GetOcclusion(Interpolators i)
 	#else
 		return 1;
 	#endif
+}
+
+float3 GetTangentSpaceNormal(Interpolators i)
+{
+	float3 normal = float3(0, 0, 1);
+	#if defined(_NORMAL_MAP)
+		normal = UnpackScaleNormal(tex2D(_NormalMap, i.uv.xy), _BumpScale);
+	#endif
+	#if defined(_DETAIL_NORMAL_MAP)
+		float3 detailNormal = 
+			UnpackScaleNormal(tex2D(_DetailNormalMap, i.uv.zw), _DetailBumpScale);
+		detailNormal = lerp(float3(0, 0, 1), detailNormal, GetDetailMask(i));
+		normal = BlendNormals(normal, detailNormal);
+	#endif
+
+	return normal;
 }
 
 void ComputeVertexLightColor(inout Interpolators i)
@@ -247,19 +265,7 @@ float3 CreateBinormal(float3 normal, float3 tangent, float binormalSign)
 
 void InitializeFragmnetNormal(inout Interpolators i)
 {
-	// i.normal.xy = tex2D(_NormalMap, i.uv).wy * 2 - 1;
-	// i.normal.xy *= _BumpScale;
-	// i.normal.z = sqrt(1 - saturate(dot(i.normal.xy, i.normal.xy)));
-	float3 mainNormal = UnpackScaleNormal(tex2D(_NormalMap, i.uv.xy), _BumpScale);
-	float3 detailNormal = UnpackScaleNormal(tex2D(_DetailNormalMap, i.uv.zw), _DetailBumpScale);
-	/***
-	// i.normal = float3(mainNormal.xy / mainNormal.z + detailNormal.xy / detailNormal.z, 1);
-	i.normal = float3(mainNormal.xy + detailNormal.xy, mainNormal.z * detailNormal.z); // whiteout blending
-	i.normal = normalize(i.normal.xzy);
-	***/
-	// use unity buildin function
-	float3 tangentSpaceNormal = BlendNormals(mainNormal, detailNormal);
-	// tangentSpaceNormal = tangentSpaceNormal.xzy;
+	float3 tangentSpaceNormal = GetTangentSpaceNormal(i);
 
 	// initialize binormal
 	#if defined(BINORMAL_PER_FRAGMENT)
