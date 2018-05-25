@@ -16,9 +16,15 @@ float _BumpScale, _DetailBumpScale;
 
 sampler2D _MetallicMap;
 float _Metallic;
-
 float _Smoothness;
-// float4 _SpecularTint;
+
+sampler2D _EmissionMap;
+float3 _Emission;
+
+sampler2D _OcclusionMap;
+float _OcclusionStrength;
+
+sampler2D _DetailMask;
 
 struct VertexData
 {
@@ -55,6 +61,37 @@ struct Interpolators
 	#endif
 };
 
+
+float GetDetailMask(Interpolators i)
+{
+	#if defined(_DETAIL_MASK)
+		return tex2D(_DetailMask, i.uv.xy).a;
+	#else
+		return 1;
+	#endif
+}
+
+float3 GetAlbedo(Interpolators i)
+{
+	float3 albedo = tex2D(_MainTex, i.uv.xy).rgb * _Tint.rgb;
+	float detail = tex2D(_DetailTex, i.uv.zw) * unity_ColorSpaceDouble;
+	albedo = lerp(albedo, albedo * detail, GetDetailMask(i));
+	return albedo;
+}
+
+float3 GetEmission(Interpolators i)
+{
+	#if defined(FORWARD_BASE_PASS)
+		#if defined(_EMISSION_MAP)
+			return tex2D(_EmissionMap, i.uv.xy) * _Emission;
+		#else
+			return _Emission;
+		#endif
+	#else
+		return 0;
+	#endif
+}
+
 float GetMetallic(Interpolators i)
 {
 	#if defined(_METALLIC_MAP)
@@ -73,6 +110,15 @@ float GetSmoothness(Interpolators i)
 		smoothness = tex2D(_MetallicMap, i.uv.xy).a;
 	#endif
 		return smoothness * _Smoothness;
+}
+
+float GetOcclusion(Interpolators i)
+{
+	#if defined(_OCCLUSION_MAP)
+		return lerp(1, tex2D(_OcclusionMap, i.uv.xy).g, _OcclusionStrength);
+	#else
+		return 1;
+	#endif
 }
 
 void ComputeVertexLightColor(inout Interpolators i)
@@ -112,6 +158,7 @@ UnityLight CreateLight(Interpolators i)
 	// #else
 		UNITY_LIGHT_ATTENUATION(attenuation, i, i.worldPos);
 	// #endif
+	// attenuation *= GetOcclusion(i);
 
 	light.color = _LightColor0.rgb * attenuation;
 	light.ndotl = DotClamped(i.normal, light.dir);
@@ -184,6 +231,10 @@ UnityIndirect CreateIndirectLight(Interpolators i, float3 viewDir)
 		{
 			indirectLight.specular = probe0;
 		}
+
+		float occlusion = GetOcclusion(i);
+		indirectLight.diffuse *= occlusion;
+		indirectLight.specular *= occlusion;
 	#endif
 
 	return indirectLight;
@@ -191,7 +242,7 @@ UnityIndirect CreateIndirectLight(Interpolators i, float3 viewDir)
 
 float3 CreateBinormal(float3 normal, float3 tangent, float binormalSign)
 {
-	return cross(normal, tangent.xyz) * (binormalSign, unity_WorldTransformParams.w);
+	return cross(normal, tangent.xyz) * (binormalSign * unity_WorldTransformParams.w);
 }
 
 void InitializeFragmnetNormal(inout Interpolators i)
@@ -261,24 +312,23 @@ float4 frag(Interpolators i) : SV_TARGET
 	
 	float3 viewDir = normalize(_WorldSpaceCameraPos - i.worldPos);
 
-	float3 albedo = tex2D(_MainTex, i.uv.xy).rgb * _Tint.rgb;
-	albedo *= tex2D(_DetailTex, i.uv.zw) * unity_ColorSpaceDouble;
-
 	/* caculate the diffuse(albedo) and the reflect(spcular) simplest metallic workflow */
 	// float3 specularTint = albedo * _Metallic;
 	// albedo *= 1 - _Metallic;
 	float3 specularTint;
 	float oneMinusReflectivity;
-	albedo = DiffuseAndSpecularFromMetallic(
-		albedo, GetMetallic(i), specularTint, oneMinusReflectivity
+	float3 albedo = DiffuseAndSpecularFromMetallic(
+		GetAlbedo(i), GetMetallic(i), specularTint, oneMinusReflectivity
 	);
 
-	return UNITY_BRDF_PBS(
+	float4 color = UNITY_BRDF_PBS(
 		albedo, specularTint, 
 		oneMinusReflectivity, GetSmoothness(i),
 		i.normal, viewDir,
 		CreateLight(i), CreateIndirectLight(i, viewDir)
 	);
+	color.rgb += GetEmission(i);
+	return color;
 }
 
 #endif

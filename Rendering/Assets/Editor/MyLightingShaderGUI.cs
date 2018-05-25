@@ -8,6 +8,8 @@ public class MyLightingShaderGUI : ShaderGUI
     MaterialProperty[] properties;
 
     static GUIContent staticLabel = new GUIContent();
+    static ColorPickerHDRConfig emissionConfig =
+        new ColorPickerHDRConfig(0f, 99f, 1f / 99f, 3f);
 
     enum SmoothnessSource
     {
@@ -79,6 +81,9 @@ public class MyLightingShaderGUI : ShaderGUI
         DoMetallic();
         DoSmoothness();
         DoNormals();
+        DoOcclusion();
+        DoEmission();
+        DoDetailMask();
         editor.TextureScaleOffsetProperty(mainTex);
     }
 
@@ -108,6 +113,48 @@ public class MyLightingShaderGUI : ShaderGUI
         	SetKeyword("_METALLIC_MAP", metallicMap.textureValue);
 		}
     }
+
+    void DoEmission()
+	{
+        MaterialProperty emissionMap = FindProperty("_EmissionMap");
+        EditorGUI.BeginChangeCheck();
+        editor.TexturePropertyWithHDRColor(
+            MakeLabel(emissionMap, "Emission (RGB)"), emissionMap, 
+			FindProperty("_Emission"), emissionConfig, false
+		);
+		if(EditorGUI.EndChangeCheck())
+		{
+        	SetKeyword("_EMISSION_MAP", emissionMap.textureValue);
+		}
+    }
+
+    void DoDetailMask()
+    {
+        MaterialProperty detailMask = FindProperty("_DetailMask");
+        EditorGUI.BeginChangeCheck();
+        editor.TexturePropertySingleLine(
+            MakeLabel(detailMask, "Detail Mask (A)"), detailMask
+		);
+		if(EditorGUI.EndChangeCheck())
+		{
+        	SetKeyword("_DETAIL_MASK", detailMask.textureValue);
+		}
+    }
+
+    void DoOcclusion()
+    {
+        MaterialProperty occlusionMap = FindProperty("_OcclusionMap");
+        EditorGUI.BeginChangeCheck();
+        editor.TexturePropertySingleLine(
+            MakeLabel(occlusionMap, "Occlusion (G)"), occlusionMap, 
+			occlusionMap.textureValue ? FindProperty("_OcclusionStrength") : null
+		);
+		if(EditorGUI.EndChangeCheck())
+		{
+        	SetKeyword("_OCCLUSION_MAP", occlusionMap.textureValue);
+		}
+    }
+    
 
 	void DoSmoothness()
 	{
