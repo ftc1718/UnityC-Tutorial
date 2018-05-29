@@ -65,7 +65,7 @@ Shader "Custom/MyFirstLightingShader"
 			#pragma shader_feature _DETAIL_ALBEDO_MAP
 			#pragma shader_feature _DETAIL_NORMAL_MAP
 
-			#pragma shader_feature _ _RENDERING_CUTOUT _RENDERING_FADE
+			#pragma shader_feature _ _RENDERING_CUTOUT _RENDERING_FADE _RENDERING_TRANSPARENT
 
 			#pragma vertex vert
 			#pragma fragment frag
@@ -101,7 +101,7 @@ Shader "Custom/MyFirstLightingShader"
 			#pragma shader_feature _DETAIL_ALBEDO_MAP
 			#pragma shader_feature _DETAIL_NORMAL_MAP
 
-			#pragma shader_feature _ _RENDERING_CUTOUT _RENDERING_FADE		
+			#pragma shader_feature _ _RENDERING_CUTOUT _RENDERING_FADE _RENDERING_TRANSPARENT	
 
 			#pragma vertex vert
 			#pragma fragment frag
