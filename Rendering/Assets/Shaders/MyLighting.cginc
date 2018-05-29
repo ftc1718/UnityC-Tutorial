@@ -66,7 +66,7 @@ struct Interpolators
 float GetAlpha(Interpolators i)
 {
 	float alpha = _Tint.a;
-	#if defined(_RENDERING_CUTOUT)
+	#if !defined(_SMOOTHNESS_ALBEDO)
 		alpha *= tex2D(_MainTex, i.uv.xy).a;
 	#endif
 	
@@ -326,7 +326,9 @@ Interpolators vert(VertexData v)
 float4 frag(Interpolators i) : SV_TARGET
 {
 	float alpha = GetAlpha(i);
-	clip(alpha - _AlphaCutoff);
+	#if defined(_RENDERING_CUTOUT)
+		clip(alpha - _AlphaCutoff);
+	#endif
 
 	InitializeFragmnetNormal(i);
 	
@@ -348,6 +350,9 @@ float4 frag(Interpolators i) : SV_TARGET
 		CreateLight(i), CreateIndirectLight(i, viewDir)
 	);
 	color.rgb += GetEmission(i);
+	#if defined(_RENDERING_FADE)
+		color.a = alpha;
+	#endif
 	return color;
 }
 
