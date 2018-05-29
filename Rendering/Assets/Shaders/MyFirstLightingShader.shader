@@ -25,6 +25,8 @@ Shader "Custom/MyFirstLightingShader"
 		_OcclusionStrength("Occlusion Strength", Range(0, 1)) = 1
 
 		[NoScaleOffset] _DetailMask ("Detail Mask", 2D) = "white" {}
+
+		_AlphaCutoff ("Alpha Cutoff", Range(0, 1)) = 0.5
 	}
 
 	CGINCLUDE
@@ -47,6 +49,8 @@ Shader "Custom/MyFirstLightingShader"
 
 			#pragma multi_compile _ VERTEXLIGHT_ON
 			#pragma multi_compile _ SHADOWS_SCREEN
+
+			#pragma shader_feature _RENDERING_CUTOUT			
 
 			#pragma shader_feature _METALLIC_MAP
 			#pragma shader_feature _ _SMOOTHNESS_ALBEDO _SMOOTHNESS_METALLIC
@@ -83,14 +87,14 @@ Shader "Custom/MyFirstLightingShader"
 
 			#pragma multi_compile_fwdadd_fullshadows
 
+			#pragma shader_feature _RENDERING_CUTOUT
+
 			#pragma shader_feature _METALLIC_MAP		
 			#pragma shader_feature _ _SMOOTHNESS_ALBEDO _SMOOTHNESS_METALLIC	
 			#pragma shader_feature _DETAIL_MASK
 			#pragma shader_feature _NORMAL_MAP
 			#pragma shader_feature _DETAIL_ALBEDO_MAP
 			#pragma shader_feature _DETAIL_NORMAL_MAP
-
-									
 
 			#pragma vertex vert
 			#pragma fragment frag

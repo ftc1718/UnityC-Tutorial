@@ -26,6 +26,8 @@ float _OcclusionStrength;
 
 sampler2D _DetailMask;
 
+float _AlphaCutoff;
+
 struct VertexData
 {
 	// float4 position : POSITION;
@@ -61,6 +63,15 @@ struct Interpolators
 	#endif
 };
 
+float GetAlpha(Interpolators i)
+{
+	float alpha = _Tint.a;
+	#if defined(_RENDERING_CUTOUT)
+		alpha *= tex2D(_MainTex, i.uv.xy).a;
+	#endif
+	
+	return alpha;
+}
 
 float GetDetailMask(Interpolators i)
 {
@@ -314,6 +325,9 @@ Interpolators vert(VertexData v)
 
 float4 frag(Interpolators i) : SV_TARGET
 {
+	float alpha = GetAlpha(i);
+	clip(alpha - _AlphaCutoff);
+
 	InitializeFragmnetNormal(i);
 	
 	float3 viewDir = normalize(_WorldSpaceCameraPos - i.worldPos);

@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEditor;
 
 public class MyLightingShaderGUI : ShaderGUI
@@ -6,6 +7,8 @@ public class MyLightingShaderGUI : ShaderGUI
     Material target;
     MaterialEditor editor;
     MaterialProperty[] properties;
+
+    bool shouldShowAlphaCutoff;
 
     static GUIContent staticLabel = new GUIContent();
     static ColorPickerHDRConfig emissionConfig =
@@ -16,11 +19,17 @@ public class MyLightingShaderGUI : ShaderGUI
         Uniform, Albedo, Metallic
     }
 
+    enum RenderingMode
+    {
+        Opaque, Cutout
+    }
+
     public override void OnGUI(MaterialEditor editor, MaterialProperty[] properties)
 	{
         this.target = editor.target as Material;
         this.editor = editor;
         this.properties = properties;
+        DoRenderingMode();        
         DoMain();
         DoSecondary();
     }
@@ -84,6 +93,10 @@ public class MyLightingShaderGUI : ShaderGUI
 			MakeLabel(mainTex, "Albedo (RGB)"), mainTex, FindProperty("_Tint")
 		);
 
+        if(shouldShowAlphaCutoff)
+        {
+            DoAlphaCutoff();
+        }
         DoMetallic();
         DoSmoothness();
         DoNormals();
@@ -91,6 +104,14 @@ public class MyLightingShaderGUI : ShaderGUI
         DoEmission();
         DoDetailMask();
         editor.TextureScaleOffsetProperty(mainTex);
+    }
+
+    void DoAlphaCutoff()
+    {
+        MaterialProperty slider = FindProperty("_AlphaCutoff");
+        EditorGUI.indentLevel += 2;
+        editor.ShaderProperty(slider, MakeLabel(slider));
+        EditorGUI.indentLevel -= 2;     
     }
 
 	void DoNormals()
@@ -194,6 +215,35 @@ public class MyLightingShaderGUI : ShaderGUI
             SetKeyword("_SMOOTHNESS_METALLIC", source == SmoothnessSource.Metallic);
         }
         EditorGUI.indentLevel -= 3;
+    }
+
+    void DoRenderingMode()
+	{
+        RenderingMode mode = RenderingMode.Opaque;
+        shouldShowAlphaCutoff = false;
+        if(IsKeywordEnabled("_RENDERING_CUTOUT"))
+		{
+            mode = RenderingMode.Cutout;
+            shouldShowAlphaCutoff = true;
+        }
+
+        EditorGUI.BeginChangeCheck();
+        mode = (RenderingMode)EditorGUILayout.EnumPopup(MakeLabel("Rendering Mode"), mode);
+		if(EditorGUI.EndChangeCheck())
+		{
+            RecordAction("Rendering Mode");
+            SetKeyword("_RENDERING_CUTOUT", mode == RenderingMode.Cutout);
+
+            RenderQueue queue = mode == RenderingMode.Opaque ?
+                RenderQueue.Geometry : RenderQueue.AlphaTest;
+            string rednerType = mode == RenderingMode.Opaque ?
+                "" : "TransparentCutout";
+            foreach(Material m in editor.targets)
+            {
+                m.renderQueue = (int)queue;
+                m.SetOverrideTag("RenderType", rednerType);
+            }
+        }
     }
 
 	void DoSecondary()
