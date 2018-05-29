@@ -284,6 +284,10 @@ float4 MyFragmentProgram (Interpolators i) : SV_TARGET {
 	float3 albedo = DiffuseAndSpecularFromMetallic(
 		GetAlbedo(i), GetMetallic(i), specularTint, oneMinusReflectivity
 	);
+	#if defined(_RENDERING_TRANSPARENT)
+		albedo *= alpha;
+		alpha = 1 - oneMinusReflectivity + alpha * oneMinusReflectivity;
+	#endif
 
 	float4 color = UNITY_BRDF_PBS(
 		albedo, specularTint,
@@ -292,7 +296,7 @@ float4 MyFragmentProgram (Interpolators i) : SV_TARGET {
 		CreateLight(i), CreateIndirectLight(i, viewDir)
 	);
 	color.rgb += GetEmission(i);
-	#if defined(_RENDERING_FADE)
+	#if defined(_RENDERING_FADE) || defined(_RENDERING_TRANSPARENT)
 		color.a = alpha;
 	#endif
 	return color;

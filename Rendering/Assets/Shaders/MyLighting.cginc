@@ -44,7 +44,7 @@ struct Interpolators
 	float4 uv : TEXCOORD0;		
 	float3 normal : TEXCOORD1;
 
-	#if defined(BINORMAL_PER_FRAGMENT)	
+	#if defined(BINORMAL_PER_FRAGMENT)
 		float4 tangent: TEXCOORD2;
 	#else
 		float3 tangent : TEXCOORD2;
@@ -343,6 +343,11 @@ float4 frag(Interpolators i) : SV_TARGET
 		GetAlbedo(i), GetMetallic(i), specularTint, oneMinusReflectivity
 	);
 
+	#if defined(_RENDERING_TRANSPARENT)
+		albedo *= alpha;
+		alpha = 1 - oneMinusReflectivity + alpha * oneMinusReflectivity;		
+	#endif
+
 	float4 color = UNITY_BRDF_PBS(
 		albedo, specularTint, 
 		oneMinusReflectivity, GetSmoothness(i),
@@ -350,7 +355,7 @@ float4 frag(Interpolators i) : SV_TARGET
 		CreateLight(i), CreateIndirectLight(i, viewDir)
 	);
 	color.rgb += GetEmission(i);
-	#if defined(_RENDERING_FADE)
+	#if defined(_RENDERING_FADE) || defined(_RENDERING_TRANSPARENT)
 		color.a = alpha;
 	#endif
 	return color;

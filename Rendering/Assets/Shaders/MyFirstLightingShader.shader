@@ -124,6 +124,9 @@ Shader "Custom/MyFirstLightingShader"
 
 			#pragma multi_compile_shadowcaster
 
+			#pragma shader_feature _RENDERING_CUTOUT
+			#pragma shader_feature _SMOOTHNESS_ALBEDO
+
 			#pragma vertex vert
 			#pragma fragment frag
 
