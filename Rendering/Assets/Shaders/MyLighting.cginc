@@ -63,6 +63,18 @@ struct Interpolators
 	#endif
 };
 
+struct FragmentOutput
+{
+	#if defined(DEFERRED_PASS)
+		float4 gBuffer0 : SV_TARGET0;
+		float4 gBuffer1 : SV_TARGET1;
+		float4 gBuffer2 : SV_TARGET2;
+		float4 gBuffer3 : SV_TARGET3;
+	#else
+		float4 color : SV_TARGET;
+	#endif
+};
+
 float GetAlpha(Interpolators i)
 {
 	float alpha = _Tint.a;
@@ -94,7 +106,7 @@ float3 GetAlbedo(Interpolators i)
 
 float3 GetEmission(Interpolators i)
 {
-	#if defined(FORWARD_BASE_PASS)
+	#if defined(FORWARD_BASE_PASS) || defined(DEFERRED_PASS)
 		#if defined(_EMISSION_MAP)
 			return tex2D(_EmissionMap, i.uv.xy) * _Emission;
 		#else
@@ -175,11 +187,15 @@ UnityLight CreateLight(Interpolators i)
 {
 	UnityLight light;
 
-	#if defined(POINT) || defined(SPOT)
-		light.dir = normalize(_WorldSpaceLightPos0.xyz - i.worldPos);
+	#if defined(DEfERRED_PASS)
+		light.dir = float3(0, 1, 0);
+		light.color = 0;
 	#else
-		light.dir = _WorldSpaceLightPos0.xyz;
-	#endif
+		#if defined(POINT) || defined(SPOT)
+			light.dir = normalize(_WorldSpaceLightPos0.xyz - i.worldPos);
+		#else
+			light.dir = _WorldSpaceLightPos0.xyz;
+		#endif
 
 	// #if defined(SHADOWS_SCREEN)
 	// 	// float attenuation = tex2D(_ShadowMapTexture, i.shadowCoordinates.xy / i.shadowCoordinates.w);
@@ -189,8 +205,9 @@ UnityLight CreateLight(Interpolators i)
 	// #endif
 	// attenuation *= GetOcclusion(i);
 
-	light.color = _LightColor0.rgb * attenuation;
-	light.ndotl = DotClamped(i.normal, light.dir);
+		light.color = _LightColor0.rgb * attenuation;
+	#endif
+	// light.ndotl = DotClamped(i.normal, light.dir);
 	return light;
 }
 
@@ -224,7 +241,7 @@ UnityIndirect CreateIndirectLight(Interpolators i, float3 viewDir)
 		indirectLight.diffuse = i.vertexLightColor;
 	#endif
 
-	#if defined(FORWARD_BASE_PASS)
+	#if defined(FORWARD_BASE_PASS) || defined(DEFERRED_PASS)
 		indirectLight.diffuse += max(0, ShadeSH9(float4(i.normal, 1)));
 		float3 reflectionDir = reflect(-viewDir, i.normal);
 		// float roughness = 1 - _Smoothness;
@@ -323,7 +340,7 @@ Interpolators vert(VertexData v)
 	return i;
 }
 
-float4 frag(Interpolators i) : SV_TARGET
+FragmentOutput frag(Interpolators i)
 {
 	float alpha = GetAlpha(i);
 	#if defined(_RENDERING_CUTOUT)
@@ -358,7 +375,30 @@ float4 frag(Interpolators i) : SV_TARGET
 	#if defined(_RENDERING_FADE) || defined(_RENDERING_TRANSPARENT)
 		color.a = alpha;
 	#endif
-	return color;
+
+	FragmentOutput output;
+
+	#if !defined(UNITY_HDR_ON)
+		color.rgb = exp2(-color.rgb);
+	#endif
+
+	#if defined(DEFERRED_PASS)
+		output.gBuffer0.rgb = albedo;
+		output.gBuffer0.a = GetOcclusion(i);
+		output.gBuffer1.rgb = specularTint;
+		output.gBuffer1.a = GetSmoothness(i);
+
+		//the alpha channal isn't used
+		output.gBuffer2 = float4(i.normal * 0.5 + 0.5, 1);
+
+		//gBuffer3 is used to accumulate the lighting of the scene
+		//32bit for LDR(ARGB2 10 10 10); 64bit for HDR(ARGBHalf)
+		output.gBuffer3 = color;
+	#else
+		output.color = color;
+	#endif
+
+	return output;
 }
 
 #endif
