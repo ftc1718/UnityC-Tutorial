@@ -327,13 +327,18 @@ void InitializeFragmnetNormal(inout Interpolators i)
 float4 ApplyFog(float4 color, Interpolators i)
 {
 	#if defined(FOG_ON)
-	float viewDistance = length(_WorldSpaceCameraPos - i.worldPos.xyz);
-	#if defined(FOG_DEPTH)
-		// viewDistance = i.worldPos.w;
-		viewDistance = UNITY_Z_0_FAR_FROM_CLIPSPACE(i.worldPos.w);
-	#endif
-	UNITY_CALC_FOG_FACTOR_RAW(viewDistance);
-	color.rgb = lerp(unity_FogColor.rgb, color.rgb, saturate(unityFogFactor));
+		float viewDistance = length(_WorldSpaceCameraPos - i.worldPos.xyz);
+		#if defined(FOG_DEPTH)
+			// viewDistance = i.worldPos.w;
+			viewDistance = UNITY_Z_0_FAR_FROM_CLIPSPACE(i.worldPos.w);
+		#endif
+		UNITY_CALC_FOG_FACTOR_RAW(viewDistance);
+
+		float3 fogColor = 0;
+		#if defined(FORWARD_BASE_PASS)
+			fogColor = unity_FogColor.rgb;
+		#endif
+		color.rgb = lerp(fogColor.rgb, color.rgb, saturate(unityFogFactor));
 	#endif
 	return color;
 }
