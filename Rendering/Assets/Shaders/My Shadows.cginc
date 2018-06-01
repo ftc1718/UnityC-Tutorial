@@ -4,7 +4,11 @@
 #include "UnityCG.cginc"
 
 #if defined(_RENDERING_FADE) || defined(_RENDERING_TRANSPARENT)
-	#define SHADOWS_SEMITRANSPARENT 1
+	#if defined(_SEMITRANSPARENT_SHADOWS)
+		#define SHADOWS_SEMITRANSPARENT 1
+	#else
+		#define _RENDERING_CUTOUT
+	#endif
 #endif
 
 #if SHADOWS_SEMITRANSPARENT || defined(_RENDERING_CUTOUT)
@@ -85,7 +89,6 @@ float4 MyShadowFragmentProgram (Interpolators i) : SV_TARGET {
 	#if SHADOWS_SEMITRANSPARENT
 		float dither =
 			tex3D(_DitherMaskLOD, float3(i.vpos.xy * 0.25, alpha * 0.9375)).a;
-			
 		clip(dither - 0.01);
 	#endif
 	

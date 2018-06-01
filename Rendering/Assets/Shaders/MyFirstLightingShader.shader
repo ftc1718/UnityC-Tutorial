@@ -36,6 +36,7 @@ Shader "Custom/MyFirstLightingShader"
 	CGINCLUDE
 
 	#define BINORMAL_PER_FRAGMENT
+	#define FOG_DISTANCE
 
 	ENDCG
 
@@ -66,6 +67,8 @@ Shader "Custom/MyFirstLightingShader"
 			#pragma shader_feature _DETAIL_NORMAL_MAP
 
 			#pragma shader_feature _ _RENDERING_CUTOUT _RENDERING_FADE _RENDERING_TRANSPARENT
+
+			#pragma multi_compile_fog
 
 			#pragma vertex vert
 			#pragma fragment frag
@@ -101,7 +104,9 @@ Shader "Custom/MyFirstLightingShader"
 			#pragma shader_feature _DETAIL_ALBEDO_MAP
 			#pragma shader_feature _DETAIL_NORMAL_MAP
 
-			#pragma shader_feature _ _RENDERING_CUTOUT _RENDERING_FADE _RENDERING_TRANSPARENT	
+			#pragma shader_feature _ _RENDERING_CUTOUT _RENDERING_FADE _RENDERING_TRANSPARENT
+
+			#pragma multi_compile_fog				
 
 			#pragma vertex vert
 			#pragma fragment frag
@@ -121,7 +126,7 @@ Shader "Custom/MyFirstLightingShader"
 			CGPROGRAM
 
 			#pragma target 3.0
-			#pragma exlude_renderers nomrt
+//			#pragma exlude_renderers nomrt
 
 			#pragma shader_feature _RENDERING_CUTOUT
 			#pragma shader_feature _METALLIC_MAP

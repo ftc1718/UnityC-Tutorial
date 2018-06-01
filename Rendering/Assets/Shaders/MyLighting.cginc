@@ -4,6 +4,13 @@
 #include "UnityPBSLighting.cginc"
 #include "AutoLight.cginc"
 
+#if defined(FOG_LINEAR) || defined(FOG_EXP) || defined(FOG_EXP2)
+	#if !defined(FOG_DISTANCE)
+		#define FOG_DEPTH 1
+	#endif
+	#define FOG_ON 1
+#endif
+
 float4 _Tint;
 sampler2D _MainTex;
 float4 _MainTex_ST;
@@ -51,7 +58,11 @@ struct Interpolators
 		float3 binormal : TEXCOORD3;
 	#endif
 
-	float3 worldPos : TEXCOORD4;
+	#if defined(FOG_DEPTH)
+		float4 worldPos : TEXCOORD4;
+	#else
+		float3 worldPos : TEXCOORD4;
+	#endif
 
 	// #if defined(SHADOWS_SCREEN)
 	// 	float4 shadowCoordinates : TEXCOORD5;
@@ -178,7 +189,7 @@ void ComputeVertexLightColor(inout Interpolators i)
 			unity_4LightPosX0, unity_4LightPosY0, unity_4LightPosZ0,
 			unity_LightColor[0].rgb, unity_LightColor[1].rgb,
 			unity_LightColor[2].rgb, unity_LightColor[3].rgb,
-			unity_4LightAtten0, i.worldPos, i.normal
+			unity_4LightAtten0, i.worldPos.xyz, i.normal
 		);
 	#endif
 }
@@ -187,7 +198,7 @@ UnityLight CreateLight(Interpolators i)
 {
 	UnityLight light;
 
-	#if defined(DEfERRED_PASS)
+	#if defined(DEFERRED_PASS)
 		light.dir = float3(0, 1, 0);
 		light.color = 0;
 	#else
@@ -201,7 +212,7 @@ UnityLight CreateLight(Interpolators i)
 	// 	// float attenuation = tex2D(_ShadowMapTexture, i.shadowCoordinates.xy / i.shadowCoordinates.w);
 	// 	float attenuation = SHADOW_ATTENUATION(i);
 	// #else
-		UNITY_LIGHT_ATTENUATION(attenuation, i, i.worldPos);
+		UNITY_LIGHT_ATTENUATION(attenuation, i, i.worldPos.xyz);
 	// #endif
 	// attenuation *= GetOcclusion(i);
 
@@ -251,7 +262,7 @@ UnityIndirect CreateIndirectLight(Interpolators i, float3 viewDir)
 		Unity_GlossyEnvironmentData envData;
 		envData.roughness = 1 - GetSmoothness(i);
 		envData.reflUVW = BoxProjection(
-			reflectionDir, i.worldPos,
+			reflectionDir, i.worldPos.xyz,
 			unity_SpecCube0_ProbePosition,
 			unity_SpecCube0_BoxMin, unity_SpecCube0_BoxMax
 		);
@@ -260,7 +271,7 @@ UnityIndirect CreateIndirectLight(Interpolators i, float3 viewDir)
 		);
 
 		envData.reflUVW = BoxProjection(
-			reflectionDir, i.worldPos,
+			reflectionDir, i.worldPos.xyz,
 			unity_SpecCube1_ProbePosition,
 			unity_SpecCube1_BoxMin, unity_SpecCube1_BoxMax
 		);
@@ -281,6 +292,10 @@ UnityIndirect CreateIndirectLight(Interpolators i, float3 viewDir)
 		float occlusion = GetOcclusion(i);
 		indirectLight.diffuse *= occlusion;
 		indirectLight.specular *= occlusion;
+
+		#if defined(DEFERRED_PASS) && UNITY_ENABLE_REFLECTION_BUFFERS
+			indirectLight.specular = 0;
+		#endif
 	#endif
 
 	return indirectLight;
@@ -309,11 +324,30 @@ void InitializeFragmnetNormal(inout Interpolators i)
 	);
 }
 
+float4 ApplyFog(float4 color, Interpolators i)
+{
+	#if defined(FOG_ON)
+	float viewDistance = length(_WorldSpaceCameraPos - i.worldPos.xyz);
+	#if defined(FOG_DEPTH)
+		// viewDistance = i.worldPos.w;
+		viewDistance = UNITY_Z_0_FAR_FROM_CLIPSPACE(i.worldPos.w);
+	#endif
+	UNITY_CALC_FOG_FACTOR_RAW(viewDistance);
+	color.rgb = lerp(unity_FogColor.rgb, color.rgb, saturate(unityFogFactor));
+	#endif
+	return color;
+}
+
 Interpolators vert(VertexData v)
 {
 	Interpolators i;
 	i.pos = UnityObjectToClipPos(v.vertex);
-	i.worldPos = mul(unity_ObjectToWorld, v.vertex);
+	i.worldPos.xyz = mul(unity_ObjectToWorld, v.vertex);
+
+	#if defined(FOG_DEPTH)
+		i.worldPos.w = i.pos.z;
+	#endif
+
 	i.normal = UnityObjectToWorldNormal(v.normal);
 
 	#if defined(BINORMAL_PER_FRAGMENT)
@@ -349,7 +383,7 @@ FragmentOutput frag(Interpolators i)
 
 	InitializeFragmnetNormal(i);
 	
-	float3 viewDir = normalize(_WorldSpaceCameraPos - i.worldPos);
+	float3 viewDir = normalize(_WorldSpaceCameraPos - i.worldPos.xyz);
 
 	/* caculate the diffuse(albedo) and the reflect(spcular) simplest metallic workflow */
 	// float3 specularTint = albedo * _Metallic;
@@ -378,11 +412,10 @@ FragmentOutput frag(Interpolators i)
 
 	FragmentOutput output;
 
-	#if !defined(UNITY_HDR_ON)
-		color.rgb = exp2(-color.rgb);
-	#endif
-
 	#if defined(DEFERRED_PASS)
+		#if !defined(UNITY_HDR_ON)
+			color.rgb = exp2(-color.rgb);
+		#endif
 		output.gBuffer0.rgb = albedo;
 		output.gBuffer0.a = GetOcclusion(i);
 		output.gBuffer1.rgb = specularTint;
@@ -395,7 +428,7 @@ FragmentOutput frag(Interpolators i)
 		//32bit for LDR(ARGB2 10 10 10); 64bit for HDR(ARGBHalf)
 		output.gBuffer3 = color;
 	#else
-		output.color = color;
+		output.color = ApplyFog(color, i);
 	#endif
 
 	return output;
