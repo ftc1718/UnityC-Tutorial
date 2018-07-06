@@ -175,7 +175,7 @@ public class MyLightingShaderGUI : ShaderGUI
         // MaterialProperty metallic = FindProperty("_Metallic");
         // EditorGUI.indentLevel += 2;
         // editor.ShaderProperty(metallic, MakeLabel(metallic));
-        // EditorGUI.indentLevel -= 2;		
+        // EditorGUI.indentLevel -= 2;
         MaterialProperty metallicMap = FindProperty("_MetallicMap");
         EditorGUI.BeginChangeCheck();
         editor.TexturePropertySingleLine(
@@ -293,7 +293,7 @@ public class MyLightingShaderGUI : ShaderGUI
         {
             mode = RenderingMode.Transparent;
         }
-        
+
         EditorGUI.BeginChangeCheck();
         mode = (RenderingMode)EditorGUILayout.EnumPopup(MakeLabel("Rendering Mode"), mode);
         if (EditorGUI.EndChangeCheck())
