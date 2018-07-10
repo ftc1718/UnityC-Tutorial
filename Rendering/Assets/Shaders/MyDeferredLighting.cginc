@@ -7,37 +7,65 @@ sampler2D _CameraGBufferTexture0;
 sampler2D _CameraGBufferTexture1;
 sampler2D _CameraGBufferTexture2;
 
-sampler2D _LightTexture0;
+sampler2D _LightTexture0, _LightTextureB0;
 float4x4 unity_WorldToLight;
 
 #if defined (SHADOWS_SCREEN)
     sampler2D _ShadowMapTexture;
 #endif
 
-float3 _LightColor, _LightDir;
+float4 _LightColor, _LightDir, _LightPos;
+float _LightAsQuad;
 
 UNITY_DECLARE_DEPTH_TEXTURE(_CameraDepthTexture);
 
 UnityLight CreateLight(float2 uv, float3 worldPos, float viewZ)
 {
     UnityLight light;
-    light.dir = -_LightDir;
     float attenuation = 1;
     float shadowAttenuation = 1;
-    #if defined(DIRECTIONAL_COOKIE)
-        float2 uvCookie = mul(unity_WorldToLight, float4(worldPos, 1)).xy;
-        attenuation *= tex2D(_LightTexture0, uvCookie).w;
-        // attenuation *= tex2Dbias(_LightTexture0, float4(uvCookie, 0, -8)).w;
+    bool shadowed = false;
+
+    #if defined(DIRECTIONAL) || defined(DIRECTIONAL_COOKIE)
+        light.dir = -_LightDir;
+        #if defined(DIRECTIONAL_COOKIE)
+            float2 uvCookie = mul(unity_WorldToLight, float4(worldPos, 1)).xy;
+            // attenuation *= tex2D(_LightTexture0, uvCookie).w;
+            attenuation *= tex2Dbias(_LightTexture0, float4(uvCookie, 0, -8)).w;
+        #endif
+
+        #if defined(SHADOWS_SCREEN)
+            shadowed = true;
+            shadowAttenuation = tex2D(_ShadowMapTexture, uv).r;
+        #endif
+    #else
+        float3 lightVec = _LightPos.xyz - worldPos;
+        light.dir = normalize(lightVec);
+
+        attenuation *= tex2D(
+            _LightTextureB0,
+            (dot(lightVec, lightVec) * _LightPos.w).rr
+        ).UNITY_ATTEN_CHANNEL;
+
+        float4 uvCookie = mul(unity_WorldToLight, float4(worldPos, 1));
+        uvCookie.xy /= uvCookie.w;
+        attenuation *= tex2Dbias(_LightTexture0, float4(uvCookie.xy, 0, -8)).w;
+
+        #if defined(SHADOWS_DEPTH)
+            shadowed = true;
+            shadowAttenuation = UnitySampleShadowmap(
+                mul(unity_WorldToShadow[0], float4(worldPos, 1))
+            );
+        #endif
+        attenuation *= uvCookie.w < 0;
     #endif
-
-    #if defined(SHADOWS_SCREEN)
-        shadowAttenuation = tex2D(_ShadowMapTexture, uv).r;
-
+    if(shadowed)
+    {
         float shadowFadeDistance =
             UnityComputeShadowFadeDistance(worldPos, viewZ);
         float shadowFade = UnityComputeShadowFade(shadowFadeDistance);
         shadowAttenuation = saturate(shadowAttenuation + shadowFade);
-    #endif
+    }
 
     light.color = _LightColor.rgb * (attenuation * shadowAttenuation);
     return light;
@@ -61,7 +89,11 @@ Interpolators vert(VertexData v)
     Interpolators i;
     i.pos = UnityObjectToClipPos(v.vertex);
     i.uv = ComputeScreenPos(i.pos);
-    i.ray = v.normal;
+    i.ray = lerp(
+        UnityObjectToViewPos(v.vertex) * float3(-1, -1, 1),
+        v.normal,
+        _LightAsQuad
+    );
     return i;
 }
 
@@ -84,7 +116,6 @@ float4 frag(Interpolators i) : SV_TARGET
     float oneMinusReflectivity = 1 - SpecularStrength(specularTint);
 
     UnityLight light = CreateLight(uv, worldPos, viewPos.z);
-
     UnityIndirect indirectLight;
     indirectLight.diffuse = 0;
     indirectLight.specular = 0;
