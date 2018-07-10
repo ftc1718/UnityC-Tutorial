@@ -42,13 +42,14 @@ struct VertexData
 	float3 normal : NORMAL;
 	float4 tangent : TANGENT;
 	float2 uv : TEXCOORD0;
+	float2 uv1 : TEXCOORD1;
 };
 
 struct Interpolators
 {
 	// float4 position : SV_POSITION;
 	float4 pos: SV_POSITION;
-	float4 uv : TEXCOORD0;		
+	float4 uv : TEXCOORD0;
 	float3 normal : TEXCOORD1;
 
 	#if defined(BINORMAL_PER_FRAGMENT)
@@ -66,11 +67,15 @@ struct Interpolators
 
 	// #if defined(SHADOWS_SCREEN)
 	// 	float4 shadowCoordinates : TEXCOORD5;
-	// #endif	
+	// #endif
 	SHADOW_COORDS(5)
 
 	#if defined(VERTEXLIGHT_ON)
 		float3 vertexLightColor : TEXCOORD6;
+	#endif
+
+	#if defined(LIGHTMAP_ON)
+		float2 lightmapUV : TEXCOORD6;
 	#endif
 };
 
@@ -92,7 +97,7 @@ float GetAlpha(Interpolators i)
 	#if !defined(_SMOOTHNESS_ALBEDO)
 		alpha *= tex2D(_MainTex, i.uv.xy).a;
 	#endif
-	
+
 	return alpha;
 }
 
@@ -164,7 +169,7 @@ float3 GetTangentSpaceNormal(Interpolators i)
 		normal = UnpackScaleNormal(tex2D(_NormalMap, i.uv.xy), _BumpScale);
 	#endif
 	#if defined(_DETAIL_NORMAL_MAP)
-		float3 detailNormal = 
+		float3 detailNormal =
 			UnpackScaleNormal(tex2D(_DetailNormalMap, i.uv.zw), _DetailBumpScale);
 		detailNormal = lerp(float3(0, 0, 1), detailNormal, GetDetailMask(i));
 		normal = BlendNormals(normal, detailNormal);
@@ -253,7 +258,15 @@ UnityIndirect CreateIndirectLight(Interpolators i, float3 viewDir)
 	#endif
 
 	#if defined(FORWARD_BASE_PASS) || defined(DEFERRED_PASS)
-		indirectLight.diffuse += max(0, ShadeSH9(float4(i.normal, 1)));
+
+		#if defined(LIGHTMAP_ON) // treat light map as indirect light
+			indirectLight.diffuse = DecodeLightmap(
+				UNITY_SAMPLE_TEX2D(unity_Lightmap, i.lightmapUV) // light map never combined with vertex light
+			);
+		#else
+			indirectLight.diffuse += max(0, ShadeSH9(float4(i.normal, 1)));
+		#endif
+
 		float3 reflectionDir = reflect(-viewDir, i.normal);
 		// float roughness = 1 - _Smoothness;
 		// float4 envSample = UNITY_SAMPLE_TEXCUBE_LOD(unity_SpecCube0, reflectionDir, roughness * UNITY_SPECCUBE_LOD_STEPS);
@@ -318,7 +331,7 @@ void InitializeFragmnetNormal(inout Interpolators i)
 	#endif
 
 	i.normal = normalize(
-		tangentSpaceNormal.x * i.tangent + 
+		tangentSpaceNormal.x * i.tangent +
 		tangentSpaceNormal.y * binormal +
 		tangentSpaceNormal.z * i.normal
 	);
@@ -367,6 +380,11 @@ Interpolators vert(VertexData v)
 	// i.uv.xy = v.uv * _MainTex_ST.xy + _MainTex_ST.zw;
 	// i.uv.zw = v.uv * _DetailTex_ST.xy + _DetailTex_ST.zw;
 
+	#if defined(LIGHTMAP_ON)
+		// i.lightmapUV = TRANSFORM_TEX(v.uv1, unity_Lightmap); // not unity_Lightmap_ST
+		i.lightmapUV = v.uv1 * unity_LightmapST.xy + unity_LightmapST.zw;
+	#endif
+
 	// #if defined(SHADOWS_SCREEN)
 	// 	// // i.shadowCoordinates.xy = (i.position.xy + i.position.w) * 0.5;
 	// 	// i.shadowCoordinates.xy = (float2(i.position.x, -i.position.y) + i.position.w) * 0.5;
@@ -387,7 +405,7 @@ FragmentOutput frag(Interpolators i)
 	#endif
 
 	InitializeFragmnetNormal(i);
-	
+
 	float3 viewDir = normalize(_WorldSpaceCameraPos - i.worldPos.xyz);
 
 	/* caculate the diffuse(albedo) and the reflect(spcular) simplest metallic workflow */
@@ -401,11 +419,11 @@ FragmentOutput frag(Interpolators i)
 
 	#if defined(_RENDERING_TRANSPARENT)
 		albedo *= alpha;
-		alpha = 1 - oneMinusReflectivity + alpha * oneMinusReflectivity;		
+		alpha = 1 - oneMinusReflectivity + alpha * oneMinusReflectivity;
 	#endif
 
 	float4 color = UNITY_BRDF_PBS(
-		albedo, specularTint, 
+		albedo, specularTint,
 		oneMinusReflectivity, GetSmoothness(i),
 		i.normal, viewDir,
 		CreateLight(i), CreateIndirectLight(i, viewDir)

@@ -54,8 +54,8 @@ Shader "Custom/MyFirstLightingShader"
 
 			#pragma target 3.0
 
-			#pragma multi_compile _ VERTEXLIGHT_ON
-			#pragma multi_compile _ SHADOWS_SCREEN		
+			#pragma multi_compile _ SHADOWS_SCREEN
+			#pragma multi_compile _ LIGHTMAP_ON VERTEXLIGHT_ON
 
 			#pragma shader_feature _METALLIC_MAP
 			#pragma shader_feature _ _SMOOTHNESS_ALBEDO _SMOOTHNESS_METALLIC
@@ -97,8 +97,8 @@ Shader "Custom/MyFirstLightingShader"
 
 			#pragma multi_compile_fwdadd_fullshadows
 
-			#pragma shader_feature _METALLIC_MAP		
-			#pragma shader_feature _ _SMOOTHNESS_ALBEDO _SMOOTHNESS_METALLIC	
+			#pragma shader_feature _METALLIC_MAP
+			#pragma shader_feature _ _SMOOTHNESS_ALBEDO _SMOOTHNESS_METALLIC
 			#pragma shader_feature _DETAIL_MASK
 			#pragma shader_feature _NORMAL_MAP
 			#pragma shader_feature _DETAIL_ALBEDO_MAP
@@ -106,13 +106,13 @@ Shader "Custom/MyFirstLightingShader"
 
 			#pragma shader_feature _ _RENDERING_CUTOUT _RENDERING_FADE _RENDERING_TRANSPARENT
 
-			#pragma multi_compile_fog				
+			#pragma multi_compile_fog
 
 			#pragma vertex vert
 			#pragma fragment frag
 
 			#include "MyLighting.cginc"
-			
+
 			ENDCG
 		}
 
@@ -139,6 +139,7 @@ Shader "Custom/MyFirstLightingShader"
 			#pragma shader_feature _DETAIL_NORMAL_MAP
 
 			#pragma multi_compile _ UNITY_HDR_ON
+			#pragma multi_compile _ LIGHTMAP_ON
 
 			#pragma vertex vert
 			#pragma fragment frag
@@ -176,5 +177,5 @@ Shader "Custom/MyFirstLightingShader"
 	}
 
 	CustomEditor "MyLightingShaderGUI"
-	
+
 }
