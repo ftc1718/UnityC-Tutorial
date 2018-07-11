@@ -131,7 +131,7 @@ public class MyLightingShaderGUI : ShaderGUI
         // GUIContent albedoLabel = new GUIContent("Albedo");
         // GUIContent albedoLabel = new GUIContent(mainTex.displayName, "Albedo (RGB)");
         editor.TexturePropertySingleLine(
-            MakeLabel(mainTex, "Albedo (RGB)"), mainTex, FindProperty("_Tint")
+            MakeLabel(mainTex, "Albedo (RGB)"), mainTex, FindProperty("_Color")
         );
 
         if (shouldShowAlphaCutoff)
