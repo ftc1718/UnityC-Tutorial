@@ -263,6 +263,15 @@ UnityIndirect CreateIndirectLight(Interpolators i, float3 viewDir)
 			indirectLight.diffuse = DecodeLightmap(
 				UNITY_SAMPLE_TEX2D(unity_Lightmap, i.lightmapUV) // light map never combined with vertex light
 			);
+
+			#if defined(DIRLIGHTMAP_COMBINED)
+				float4 lightmapDirection = UNITY_SAMPLE_TEX2D_SAMPLER(
+					unity_LightmapInd, unity_Lightmap, i.lightmapUV
+				);
+				indirectLight.diffuse = DecodeDirectionalLightmap(
+					indirectLight.diffuse, lightmapDirection, i.normal
+				);
+			#endif
 		#else
 			indirectLight.diffuse += max(0, ShadeSH9(float4(i.normal, 1)));
 		#endif
