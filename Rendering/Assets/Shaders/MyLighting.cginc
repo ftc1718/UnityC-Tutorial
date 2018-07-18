@@ -11,6 +11,12 @@
 	#define FOG_ON 1
 #endif
 
+#if !defined(LIGHTMAP_ON) && defined(SHADOWS_SCREEN)
+	#if defined(SHADOWS_SHADOWMASK) && !defined(UNITY_NO_SCREENSPACE_SHADOWS)
+		#define ADDITIONAL_MASKED_DIRECTIONAL_SHADOWS 1
+	#endif
+#endif
+
 float4 _Color;
 sampler2D _MainTex;
 float4 _MainTex_ST;
@@ -75,7 +81,7 @@ struct Interpolators
 		float3 vertexLightColor : TEXCOORD6;
 	#endif
 
-	#if defined(LIGHTMAP_ON)
+	#if defined(LIGHTMAP_ON) || ADDITIONAL_MASKED_DIRECTIONAL_SHADOWS
 		float2 lightmapUV : TEXCOORD6;
 	#endif
 };
@@ -87,6 +93,10 @@ struct FragmentOutput
 		float4 gBuffer1 : SV_TARGET1;
 		float4 gBuffer2 : SV_TARGET2;
 		float4 gBuffer3 : SV_TARGET3;
+
+		#if defined(SHADOWS_SHADOWMASK) && (UNITY_ALLOWED_MRT_COUNT > 4)
+			float gBuffer4 : SV_TARGET4;
+		#endif
 	#else
 		float4 color : SV_TARGET;
 	#endif
@@ -202,12 +212,19 @@ void ComputeVertexLightColor(inout Interpolators i)
 
 float FadeShadows(Interpolators i, float attenuation)
 {
-	#if HANDLE_SHADOWS_BLENDING_IN_GI
+	#if HANDLE_SHADOWS_BLENDING_IN_GI || ADDITIONAL_MASKED_DIRECTIONAL_SHADOWS
+		#if ADDITIONAL_MASKED_DIRECTIONAL_SHADOWS
+			attenuation = SHADOW_ATTENUATION(i);
+		#endif
 		float viewZ = dot(_WorldSpaceCameraPos - i.worldPos, UNITY_MATRIX_V[2].xyz);
 		float shadowFadeDistance =
 				UnityComputeShadowFadeDistance(i.worldPos, viewZ);
 			float shadowFade = UnityComputeShadowFade(shadowFadeDistance);
-			attenuation = saturate(attenuation + shadowFade);
+			float bakedAttenuation = 
+				UnitySampleBakeOcclusion(i.lightmapUV, i.worldPos);
+		attenuation = UnityMixRealtimeAndBakedShadows(
+			attenuation, bakedAttenuation, shadowFade
+		);
 	#endif
 		return attenuation;
 }
@@ -405,7 +422,7 @@ Interpolators vert(VertexData v)
 	// i.uv.xy = v.uv * _MainTex_ST.xy + _MainTex_ST.zw;
 	// i.uv.zw = v.uv * _DetailTex_ST.xy + _DetailTex_ST.zw;
 
-	#if defined(LIGHTMAP_ON)
+	#if defined(LIGHTMAP_ON) || ADDITIONAL_MASKED_DIRECTIONAL_SHADOWS
 		// i.lightmapUV = TRANSFORM_TEX(v.uv1, unity_Lightmap); // not unity_Lightmap_ST
 		i.lightmapUV = v.uv1 * unity_LightmapST.xy + unity_LightmapST.zw;
 	#endif
@@ -476,6 +493,15 @@ FragmentOutput frag(Interpolators i)
 		//gBuffer3 is used to accumulate the lighting of the scene
 		//32bit for LDR(ARGB2 10 10 10); 64bit for HDR(ARGBHalf)
 		output.gBuffer3 = color;
+
+		#if defined(SHADOWS_SHADOWMASK) && (UNITY_ALLOWED_MRT_COUNT > 4)
+			float2 shadowUV = 0;
+			#if defined(LIGHTMAP_ON)
+				shadowUV = i.lightmapUV;
+			#endif
+			output.gBuffer4 = 
+				UnityGetRawBakedOcclusions(shadowUV, i.worldPos.xyz);
+		#endif
 	#else
 		output.color = ApplyFog(color, i);
 	#endif
