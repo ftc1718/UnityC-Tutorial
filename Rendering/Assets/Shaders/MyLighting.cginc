@@ -68,7 +68,8 @@ struct Interpolators
 	// #if defined(SHADOWS_SCREEN)
 	// 	float4 shadowCoordinates : TEXCOORD5;
 	// #endif
-	SHADOW_COORDS(5)
+	// SHADOW_COORDS(5)
+	UNITY_SHADOW_COORDS(5)
 
 	#if defined(VERTEXLIGHT_ON)
 		float3 vertexLightColor : TEXCOORD6;
@@ -199,6 +200,18 @@ void ComputeVertexLightColor(inout Interpolators i)
 	#endif
 }
 
+float FadeShadows(Interpolators i, float attenuation)
+{
+	#if HANDLE_SHADOWS_BLENDING_IN_GI
+		float viewZ = dot(_WorldSpaceCameraPos - i.worldPos, UNITY_MATRIX_V[2].xyz);
+		float shadowFadeDistance =
+				UnityComputeShadowFadeDistance(i.worldPos, viewZ);
+			float shadowFade = UnityComputeShadowFade(shadowFadeDistance);
+			attenuation = saturate(attenuation + shadowFade);
+	#endif
+		return attenuation;
+}
+
 UnityLight CreateLight(Interpolators i)
 {
 	UnityLight light;
@@ -218,6 +231,7 @@ UnityLight CreateLight(Interpolators i)
 	// 	float attenuation = SHADOW_ATTENUATION(i);
 	// #else
 		UNITY_LIGHT_ATTENUATION(attenuation, i, i.worldPos.xyz);
+		attenuation = FadeShadows(i, attenuation);
 	// #endif
 	// attenuation *= GetOcclusion(i);
 
@@ -368,6 +382,8 @@ float4 ApplyFog(float4 color, Interpolators i)
 Interpolators vert(VertexData v)
 {
 	Interpolators i;
+	i = (Interpolators)0; // UNITY_INITIALIZE_OUTPUT(Interpolators, i);
+
 	i.pos = UnityObjectToClipPos(v.vertex);
 	i.worldPos.xyz = mul(unity_ObjectToWorld, v.vertex);
 
@@ -400,7 +416,8 @@ Interpolators vert(VertexData v)
 	// 	// i.shadowCoordinates.zw = i.position.zw;
 	// 	i.shadowCoordinates = ComputeScreenPos(i.position);
 	// #endif
-	TRANSFER_SHADOW(i);
+	// TRANSFER_SHADOW(i);
+	UNITY_TRANSFER_SHADOW(i, v.uv1);
 
 	ComputeVertexLightColor(i);
 	return i;
