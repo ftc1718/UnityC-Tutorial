@@ -33,7 +33,7 @@ float _OcclusionStrength;
 
 sampler2D _DetailMask;
 
-float _AlphaCutoff;
+float _Cutoff;
 
 struct VertexData
 {
@@ -401,7 +401,7 @@ FragmentOutput frag(Interpolators i)
 {
 	float alpha = GetAlpha(i);
 	#if defined(_RENDERING_CUTOUT)
-		clip(alpha - _AlphaCutoff);
+		clip(alpha - _Cutoff);
 	#endif
 
 	InitializeFragmnetNormal(i);

@@ -149,7 +149,7 @@ public class MyLightingShaderGUI : ShaderGUI
 
     void DoAlphaCutoff()
     {
-        MaterialProperty slider = FindProperty("_AlphaCutoff");
+        MaterialProperty slider = FindProperty("_Cutoff");
         EditorGUI.indentLevel += 2;
         editor.ShaderProperty(slider, MakeLabel(slider));
         EditorGUI.indentLevel -= 2;
@@ -199,6 +199,12 @@ public class MyLightingShaderGUI : ShaderGUI
         if (EditorGUI.EndChangeCheck())
         {
             SetKeyword("_EMISSION_MAP", emissionMap.textureValue);
+
+            foreach(Material m in editor.targets)
+            {
+                m.globalIlluminationFlags =
+                    MaterialGlobalIlluminationFlags.BakedEmissive;
+            }
         }
     }
 
