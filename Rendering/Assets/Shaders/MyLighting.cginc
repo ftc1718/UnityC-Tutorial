@@ -61,6 +61,50 @@ struct VertexData
 struct Interpolators
 {
 	// float4 position : SV_POSITION;
+	#if defined(LOD_FADE_CROSSFADE)
+		UNITY_VPOS_TYPE vpos : VPOS;
+	#else
+		float4 pos: SV_POSITION;
+	#endif
+
+	float4 uv : TEXCOORD0;
+	float3 normal : TEXCOORD1;
+
+	#if defined(BINORMAL_PER_FRAGMENT)
+		float4 tangent: TEXCOORD2;
+	#else
+		float3 tangent : TEXCOORD2;
+		float3 binormal : TEXCOORD3;
+	#endif
+
+	#if defined(FOG_DEPTH)
+		float4 worldPos : TEXCOORD4;
+	#else
+		float3 worldPos : TEXCOORD4;
+	#endif
+
+	// #if defined(SHADOWS_SCREEN)
+	// 	float4 shadowCoordinates : TEXCOORD5;
+	// #endif
+	// SHADOW_COORDS(5)
+	UNITY_SHADOW_COORDS(5)
+
+	#if defined(VERTEXLIGHT_ON)
+		float3 vertexLightColor : TEXCOORD6;
+	#endif
+
+	#if defined(LIGHTMAP_ON) || ADDITIONAL_MASKED_DIRECTIONAL_SHADOWS
+		float2 lightmapUV : TEXCOORD6;
+	#endif
+
+	#if defined(DYNAMICLIGHTMAP_ON)
+		float2 dynamicLightmapUV : TEXCOORD7;
+	#endif
+};
+
+struct InterpolatorsVertex
+{
+	// float4 position : SV_POSITION;
 	float4 pos: SV_POSITION;
 	float4 uv : TEXCOORD0;
 	float3 normal : TEXCOORD1;
@@ -464,9 +508,9 @@ float4 ApplyFog(float4 color, Interpolators i)
 	return color;
 }
 
-Interpolators vert(VertexData v)
+InterpolatorsVertex vert(VertexData v)
 {
-	Interpolators i;
+	InterpolatorsVertex i;
 	i = (Interpolators)0; // UNITY_INITIALIZE_OUTPUT(Interpolators, i);
 
 	i.pos = UnityObjectToClipPos(v.vertex);
@@ -515,6 +559,10 @@ Interpolators vert(VertexData v)
 
 FragmentOutput frag(Interpolators i)
 {
+	#if defined(LOD_FADE_CROSSFADE)
+		UnityApplyDitherCrossFade(i.vpos);
+	#endif
+
 	float alpha = GetAlpha(i);
 	#if defined(_RENDERING_CUTOUT)
 		clip(alpha - _Cutoff);

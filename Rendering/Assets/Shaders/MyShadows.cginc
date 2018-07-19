@@ -33,7 +33,12 @@ struct VertexData
 
 struct InterpolatorsVertex
 {
-    float4 position : SV_POSITION;
+    #if SHADOWS_SEMITRANSPARENT || defined(LOD_FADE_CROSSFADE)
+		UNITY_VPOS_TYPE vpos : VPOS;
+    #else
+        float4 position : SV_POSITION;
+    #endif
+
     #if SHADOWS_NEED_UV
         float2 uv : TEXCOORD0;
     #endif
@@ -90,6 +95,10 @@ InterpolatorsVertex vert(VertexData v)
 
 float4 frag(Interpolators i) : SV_TARGET
 {
+    #if defined(LOD_FADE_CROSSFADE)
+		UnityApplyDitherCrossFade(i.vpos);
+	#endif
+    
     float alpha = GetAlpha(i);
     #if defined(_RENDERING_CUTOUT)
         clip(alpha - _Cutoff);
