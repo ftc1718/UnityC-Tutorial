@@ -231,7 +231,7 @@ float FadeShadows(Interpolators i, float attenuation)
 		float shadowFadeDistance =
 				UnityComputeShadowFadeDistance(i.worldPos, viewZ);
 			float shadowFade = UnityComputeShadowFade(shadowFadeDistance);
-			float bakedAttenuation = 
+			float bakedAttenuation =
 				UnitySampleBakedOcclusion(i.lightmapUV, i.worldPos);
 		attenuation = UnityMixRealtimeAndBakedShadows(
 			attenuation, bakedAttenuation, shadowFade
@@ -296,7 +296,7 @@ void ApplySubtractiveLighting(Interpolators i, inout UnityIndirect indirectLight
 		attenuation = FadeShadows(i, attenuation);
 
 		float ndotl = saturate(dot(i.normal, _WorldSpaceLightPos0.xyz));
-		float3 shadowedLightEstimate = 
+		float3 shadowedLightEstimate =
 			ndotl * (1 - attenuation) * _LightColor0.rgb;
 		float3 subtractedLight = indirectLight.diffuse - shadowedLightEstimate;
 		subtractedLight = max(subtractedLight, unity_ShadowColor.rgb);
@@ -354,7 +354,26 @@ UnityIndirect CreateIndirectLight(Interpolators i, float3 viewDir)
 		#endif
 
 		#if !defined(LIGHTMAP_ON) && !defined(DYNAMICLIGHTmAP_ON)
-			indirectLight.diffuse += max(0, ShadeSH9(float4(i.normal, 1)));
+			#if UNITY_LIGHT_PROBE_PROXY_VOLUME
+				if(unity_ProbeVolumeParams.x == 1)
+				{
+					indirectLight.diffuse = SHEvalLinearL0L1_SampleProbeVolume(
+						float4(i.normal, 1), i.worldPos
+					);
+					indirectLight.diffuse = max(0, indirectLight.diffuse);
+					#if defined(UNITY_COLORSPACE_GAMMA)
+						indirectLight.diffuse =
+							LinearToGammaSpace(indirectLight.diffuse);
+					#endif
+				}
+				else
+				{
+					indirectLight.diffuse +=
+						max(0, ShadeSH9(float4(i.normal, 1)));
+				}
+			#else
+				indirectLight.diffuse += max(0, ShadeSH9(float4(i.normal, 1)));
+			#endif
 		#endif
 		float3 reflectionDir = reflect(-viewDir, i.normal);
 		// float roughness = 1 - _Smoothness;
@@ -477,7 +496,7 @@ Interpolators vert(VertexData v)
 	#endif
 
 	#if defined(DYNAMICLIGHTMAP_ON)
-		i.dynamicLightmapUV = 
+		i.dynamicLightmapUV =
 			v.uv2 * unity_DynamicLightmapST.xy + unity_DynamicLightmapST.zw;
 	#endif
 
@@ -553,7 +572,7 @@ FragmentOutput frag(Interpolators i)
 			#if defined(LIGHTMAP_ON)
 				shadowUV = i.lightmapUV;
 			#endif
-			output.gBuffer4 = 
+			output.gBuffer4 =
 				UnityGetRawBakedOcclusions(shadowUV, i.worldPos.xyz);
 		#endif
 	#else
