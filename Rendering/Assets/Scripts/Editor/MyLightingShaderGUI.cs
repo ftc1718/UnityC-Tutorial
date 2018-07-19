@@ -196,14 +196,15 @@ public class MyLightingShaderGUI : ShaderGUI
             MakeLabel(emissionMap, "Emission (RGB)"), emissionMap,
             FindProperty("_Emission"), emissionConfig, false
         );
+        editor.LightmapEmissionProperty(2);
         if (EditorGUI.EndChangeCheck())
         {
             SetKeyword("_EMISSION_MAP", emissionMap.textureValue);
 
             foreach(Material m in editor.targets)
             {
-                m.globalIlluminationFlags =
-                    MaterialGlobalIlluminationFlags.BakedEmissive;
+                m.globalIlluminationFlags &=
+                    ~MaterialGlobalIlluminationFlags.EmissiveIsBlack;
             }
         }
     }
