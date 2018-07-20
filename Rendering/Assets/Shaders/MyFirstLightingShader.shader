@@ -70,6 +70,7 @@ Shader "Custom/MyFirstLightingShader"
 			#pragma multi_compile_fwdbase
 			#pragma multi_compile_fog
 			#pragma multi_compile_instancing
+			#pragma instancing_options lodfade
 
 			#pragma vertex vert
 			#pragma fragment frag
@@ -142,9 +143,10 @@ Shader "Custom/MyFirstLightingShader"
 			#pragma shader_feature _DETAIL_NORMAL_MAP
 
 			#pragma multi_compile_prepassfinal
-			
+
 			//Objects with MultiLight can only  instancing in deferred rendering path
 			#pragma multi_compile_instancing
+			#pragma instancing_options lodfade
 
 			#pragma multi_compile _ LOD_FADE_CROSSFADE
 
@@ -178,6 +180,7 @@ Shader "Custom/MyFirstLightingShader"
 			#pragma multi_compile _ LOD_FADE_CROSSFADE
 
 			#pragma multi_compile_instancing
+			#pragma instancing_options lodfade
 
 			#pragma vertex vert
 			#pragma fragment frag

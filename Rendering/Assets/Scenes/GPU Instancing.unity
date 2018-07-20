@@ -144,7 +144,7 @@ Light:
   m_SpotAngle: 30
   m_CookieSize: 10
   m_Shadows:
-    m_Type: 0
+    m_Type: 2
     m_Resolution: -1
     m_CustomResolution: -1
     m_Strength: 1
@@ -285,7 +285,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9fee8e62cf35a314e8135b467c4e31f0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  prefab: {fileID: 4206766713636984, guid: d3aae51c19d63ae4eb1c44958b8add9c, type: 2}
+  prefab: {fileID: 4074500503451700, guid: 94e30ee61ce166a4dbf837e4225f0ed6, type: 2}
   instances: 5000
   raius: 50
 --- !u!4 &1884619084

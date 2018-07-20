@@ -24,8 +24,24 @@ public class GPUInstancingTest : MonoBehaviour {
             properties.SetColor(
                 "_Color", new Color(Random.value, Random.value, Random.value)
             );
-            t.GetComponent<MeshRenderer>().SetPropertyBlock(properties);
-        }
 
+            //support for both group lod and normal sphere
+            MeshRenderer r = t.GetComponent<MeshRenderer>();
+			if(r)
+			{
+                r.SetPropertyBlock(properties);
+            }
+			else
+			{
+                for (int ci = 0; ci < t.childCount; ci++)
+				{
+                    r = t.GetChild(ci).GetComponent<MeshRenderer>();
+					if(r)
+					{
+                        r.SetPropertyBlock(properties);
+                    }
+                }
+            }
+        }
     }
 }
