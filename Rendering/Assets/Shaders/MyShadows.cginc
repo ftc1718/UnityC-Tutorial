@@ -17,7 +17,11 @@
     #endif
 #endif
 
-float4 _Color;
+UNITY_INSTANCING_CBUFFER_START(InstanceProperties)
+	UNITY_DEFINE_INSTANCED_PROP(float4, _Color)
+UNITY_INSTANCING_CBUFFER_END
+
+// float4 _Color;
 sampler2D _MainTex;
 float4 _MainTex_ST;
 float _Cutoff;
@@ -34,6 +38,7 @@ struct VertexData
 
 struct InterpolatorsVertex
 {
+    UNITY_VERTEX_INPUT_INSTANCE_ID
     #if SHADOWS_SEMITRANSPARENT || defined(LOD_FADE_CROSSFADE)
 		UNITY_VPOS_TYPE vpos : VPOS;
     #else
@@ -51,6 +56,7 @@ struct InterpolatorsVertex
 
 struct Interpolators
 {
+    UNITY_VERTEX_INPUT_INSTANCE_ID
     #if SHADOWS_SEMITRANSPARENT
         UNITY_VPOS_TYPE vpos : VPOS;
     #else
@@ -68,7 +74,7 @@ struct Interpolators
 
 float GetAlpha(Interpolators i)
 {
-	float alpha = _Color.a;
+	float alpha = UNITY_ACCESS_INSTANCED_PROP(_Color).a;
 	#if SHADOWS_NEED_UV
 		alpha *= tex2D(_MainTex, i.uv.xy).a;
 	#endif
@@ -80,6 +86,8 @@ InterpolatorsVertex vert(VertexData v)
 {
     InterpolatorsVertex i;
     UNITY_SETUP_INSTANCE_ID(v);
+	UNITY_TRANSFER_INSTANCE_ID(v, i);
+
     #if defined(SHADOWS_CUBE)
         i.position = UnityObjectToClipPos(v.position);
         i.lightVec = mul(unity_ObjectToWorld, v.position).xyz - _LightPositionRange.xyz;
@@ -97,6 +105,8 @@ InterpolatorsVertex vert(VertexData v)
 
 float4 frag(Interpolators i) : SV_TARGET
 {
+    UNITY_SETUP_INSTANCE_ID(i);
+
     #if defined(LOD_FADE_CROSSFADE)
 		UnityApplyDitherCrossFade(i.vpos);
 	#endif
