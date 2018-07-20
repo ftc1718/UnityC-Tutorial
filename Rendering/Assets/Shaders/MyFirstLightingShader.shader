@@ -142,6 +142,8 @@ Shader "Custom/MyFirstLightingShader"
 			#pragma shader_feature _DETAIL_NORMAL_MAP
 
 			#pragma multi_compile_prepassfinal
+			
+			//Objects with MultiLight can only  instancing in deferred rendering path
 			#pragma multi_compile_instancing
 
 			#pragma multi_compile _ LOD_FADE_CROSSFADE
