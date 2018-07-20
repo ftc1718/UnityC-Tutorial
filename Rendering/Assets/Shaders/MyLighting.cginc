@@ -49,6 +49,7 @@ float _Cutoff;
 
 struct VertexData
 {
+	UNITY_VERTEX_INPUT_INSTANCE_ID
 	// float4 position : POSITION;
 	float4 vertex : POSITION;
 	float3 normal : NORMAL;
@@ -512,6 +513,7 @@ InterpolatorsVertex vert(VertexData v)
 {
 	InterpolatorsVertex i;
 	i = (Interpolators)0; // UNITY_INITIALIZE_OUTPUT(Interpolators, i);
+	UNITY_SETUP_INSTANCE_ID(v);
 
 	i.pos = UnityObjectToClipPos(v.vertex);
 	i.worldPos.xyz = mul(unity_ObjectToWorld, v.vertex);

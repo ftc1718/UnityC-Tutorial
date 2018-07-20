@@ -73,6 +73,7 @@ public class MyLightingShaderGUI : ShaderGUI
         DoRenderingMode();
         DoMain();
         DoSecondary();
+        DoAdvanced();
     }
 
     void SetKeyword(string keyword, bool state)
@@ -357,6 +358,12 @@ public class MyLightingShaderGUI : ShaderGUI
         {
             SetKeyword("_DETAIL_NORMAL_MAP", normalMap.textureValue);
         }
+    }
+
+    void DoAdvanced()
+    {
+        GUILayout.Label("Advanced Options", EditorStyles.boldLabel);
+        editor.EnableInstancingField();
     }
 
 }
