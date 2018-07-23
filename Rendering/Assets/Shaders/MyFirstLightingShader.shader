@@ -41,8 +41,11 @@ Shader "Custom/MyFirstLightingShader"
 	#define BINORMAL_PER_FRAGMENT
 	#define FOG_DISTANCE
 
-	// define PARALLAX_BIAS 0
-	// define PARALLAX_OFFSET_LIMITING
+	#define PARALLAX_BIAS 0
+	// #define PARALLAX_OFFSET_LIMITING
+	#define PARALLAX_RAYMARCHING_STEPS 10
+	#define PARALLAX_RAYMARCHING_INTERPOLATE
+	#define PARALLAX_FUNCTION ParallaxRaymarching
 
 	ENDCG
 
