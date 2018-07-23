@@ -530,7 +530,10 @@ void ApplyParallax(inout Interpolators i)
 {
 	#if defined(_PARALLAX_MAP)
 		i.tangentViewDir = normalize(i.tangentViewDir);
-		i.uv.xy += i.tangentViewDir.xy * _ParallaxStrength;
+		float height = tex2D(_ParallaxMap, i.uv.xy).g;
+		height -= 0.5;
+		height *= _ParallaxStrength;
+		i.uv.xy += i.tangentViewDir.xy * height;
 	#endif
 }
 
