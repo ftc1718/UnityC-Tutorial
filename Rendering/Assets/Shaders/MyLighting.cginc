@@ -47,6 +47,9 @@ float3 _Emission;
 sampler2D _OcclusionMap;
 float _OcclusionStrength;
 
+sampler2D _ParallaxMap;
+float _ParallaxStrength;
+
 sampler2D _DetailMask;
 
 float _Cutoff;
@@ -106,6 +109,10 @@ struct Interpolators
 	#if defined(DYNAMICLIGHTMAP_ON)
 		float2 dynamicLightmapUV : TEXCOORD7;
 	#endif
+
+	#if defined(_PARALLAX_MAP)
+		float3 tangentViewDir : TEXCOORD8;
+	#endif
 };
 
 struct InterpolatorsVertex
@@ -145,6 +152,10 @@ struct InterpolatorsVertex
 
 	#if defined(DYNAMICLIGHTMAP_ON)
 		float2 dynamicLightmapUV : TEXCOORD7;
+	#endif
+
+	#if defined(_PARALLAX_MAP)
+		float3 tangentViewDir : TEXCOORD8;
 	#endif
 };
 
@@ -515,6 +526,14 @@ float4 ApplyFog(float4 color, Interpolators i)
 	return color;
 }
 
+void ApplyParallax(inout Interpolators i)
+{
+	#if defined(_PARALLAX_MAP)
+		i.tangentViewDir = normalize(i.tangentViewDir);
+		i.uv.xy += i.tangentViewDir.xy * _ParallaxStrength;
+	#endif
+}
+
 InterpolatorsVertex vert(VertexData v)
 {
 	InterpolatorsVertex i;
@@ -563,6 +582,16 @@ InterpolatorsVertex vert(VertexData v)
 	UNITY_TRANSFER_SHADOW(i, v.uv1);
 
 	ComputeVertexLightColor(i);
+
+	#if defined (_PARALLAX_MAP)
+		float3x3 objectToTangent = float3x3(
+			v.tangent.xyz,
+			cross(v.normal, v.tangent.xyz) * v.tangent.w,
+			v.normal
+		);
+		i.tangentViewDir = mul(objectToTangent, ObjSpaceViewDir(v.vertex));
+	#endif
+
 	return i;
 }
 
@@ -572,6 +601,8 @@ FragmentOutput frag(Interpolators i)
 	#if defined(LOD_FADE_CROSSFADE)
 		UnityApplyDitherCrossFade(i.vpos);
 	#endif
+
+	ApplyParallax(i);
 
 	float alpha = GetAlpha(i);
 	#if defined(_RENDERING_CUTOUT)

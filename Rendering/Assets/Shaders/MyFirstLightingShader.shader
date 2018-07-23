@@ -28,6 +28,9 @@ Shader "Custom/MyFirstLightingShader"
 
 		_Cutoff ("Alpha Cutoff", Range(0, 1)) = 0.5
 
+		[NoScaleOffset] _ParallaxMap ("Parallax", 2D) = "black" {}
+		_ParallaxStrength ("Parallax Strength", Range(0, 0.1)) = 0
+
 		[HideInInspector] _SrcBlend ("_SrcBlend", Float) = 1
 		[HideInInspector] _DstBlend ("_DstBlend", Float) = 0
 		[HideInInspector] _ZWrite ("_ZWrite", Float) = 1
@@ -62,6 +65,7 @@ Shader "Custom/MyFirstLightingShader"
 			#pragma shader_feature _NORMAL_MAP
 			#pragma shader_feature _DETAIL_ALBEDO_MAP
 			#pragma shader_feature _DETAIL_NORMAL_MAP
+			#pragma shader_feature _PARALLAX_MAP
 
 			#pragma shader_feature _ _RENDERING_CUTOUT _RENDERING_FADE _RENDERING_TRANSPARENT
 
@@ -105,6 +109,7 @@ Shader "Custom/MyFirstLightingShader"
 			#pragma shader_feature _NORMAL_MAP
 			#pragma shader_feature _DETAIL_ALBEDO_MAP
 			#pragma shader_feature _DETAIL_NORMAL_MAP
+			#pragma shader_feature _PARALLAX_MAP
 
 			#pragma shader_feature _ _RENDERING_CUTOUT _RENDERING_FADE _RENDERING_TRANSPARENT
 
@@ -141,6 +146,7 @@ Shader "Custom/MyFirstLightingShader"
 			#pragma shader_feature _NORMAL_MAP
 			#pragma shader_feature _DETAIL_ALBEDO_MAP
 			#pragma shader_feature _DETAIL_NORMAL_MAP
+			#pragma shader_feature _PARALLAX_MAP
 
 			#pragma multi_compile_prepassfinal
 
