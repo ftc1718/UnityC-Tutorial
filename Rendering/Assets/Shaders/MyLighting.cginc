@@ -564,10 +564,30 @@ float2 ParallaxRaymarching(float2 uv, float2 viewDir)
 		uvOffset -= uvDelta;
 		stepHeight -=stepSize;
 		surfaceHeight = GetParallaxHeight(uv + uvOffset);
-
 	}
 
-	#if defined(PARALLAX_RAYMARCHING_INTERPOLATE)
+	#if !defined(PARALLAX_RAYMARCHING_SEARCH_STEPS)
+		#define PARALLAX_RAYMARCHING_SEARCH_STEPS 0
+	#endif
+	#if PARALLAX_RAYMARCHING_SEARCH_STEPS > 0
+		for (int i = 0; i < PARALLAX_RAYMARCHING_SEARCH_STEPS; i++)
+		{
+			uvDelta *= 0.5;
+			stepSize *= 0.5;
+
+			if(stepHeight < surfaceHeight)
+			{
+				uvOffset += uvDelta;
+				stepHeight += stepSize;
+			}
+			else
+			{
+				uvOffset -= uvDelta;
+				stepHeight -= stepSize;
+			}
+			surfaceHeight = GetParallaxHeight(uv + uvOffset);
+		}
+	#elif defined(PARALLAX_RAYMARCHING_INTERPOLATE)
 		float preDifference = preStepHeight - preSurfaceHeight;
 		float difference = surfaceHeight - stepHeight;
 		float t = preDifference / (preDifference + difference);
