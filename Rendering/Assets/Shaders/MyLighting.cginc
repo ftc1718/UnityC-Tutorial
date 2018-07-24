@@ -667,6 +667,10 @@ InterpolatorsVertex vert(VertexData v)
 	ComputeVertexLightColor(i);
 
 	#if defined (_PARALLAX_MAP)
+		#if defined(PARALLAX_SUPPORT_SCALED_DYNAMIC_BATCHING)//only scaled dynamic batching normalize normal and tangent
+			v.tangent.xyz = normalize(v.tangent.xyz);
+			v.normal = normalize(v.normal);
+		#endif
 		float3x3 objectToTangent = float3x3(
 			v.tangent.xyz,
 			cross(v.normal, v.tangent.xyz) * v.tangent.w,
