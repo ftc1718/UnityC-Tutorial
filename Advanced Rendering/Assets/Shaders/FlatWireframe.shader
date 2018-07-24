@@ -63,7 +63,7 @@ Shader "Custom/FlatWireframe"
 			ZWrite [_ZWrite]
 			CGPROGRAM
 
-			#pragma target 3.0
+			#pragma target 4.0
 
 			#pragma shader_feature _METALLIC_MAP
 			#pragma shader_feature _ _SMOOTHNESS_ALBEDO _SMOOTHNESS_METALLIC
@@ -86,10 +86,11 @@ Shader "Custom/FlatWireframe"
 
 			#pragma vertex vert
 			#pragma fragment frag
+			#pragma geometry geom
 
 			#define FORWARD_BASE_PASS
 
-			#include "MyLighting.cginc"
+			#include "MyFlatWireframe.cginc"
 
 			ENDCG
 		}
@@ -107,7 +108,7 @@ Shader "Custom/FlatWireframe"
 
 			CGPROGRAM
 
-			#pragma target 3.0
+			#pragma target 4.0
 
 			#pragma multi_compile_fwdadd_fullshadows
 
@@ -127,8 +128,9 @@ Shader "Custom/FlatWireframe"
 
 			#pragma vertex vert
 			#pragma fragment frag
+			#pragma geometry geom
 
-			#include "MyLighting.cginc"
+			#include "MyFlatWireframe.cginc"
 
 			ENDCG
 		}
@@ -142,7 +144,7 @@ Shader "Custom/FlatWireframe"
 
 			CGPROGRAM
 
-			#pragma target 3.0
+			#pragma target 4.0
 //			#pragma exlude_renderers nomrt
 
 			#pragma shader_feature _RENDERING_CUTOUT
@@ -166,10 +168,11 @@ Shader "Custom/FlatWireframe"
 
 			#pragma vertex vert
 			#pragma fragment frag
+			#pragma geometry geom
 
 			#define DEFERRED_PASS
 
-			#include "MyLighting.cginc"
+			#include "MyFlatWireframe.cginc"
 
 			ENDCG
 		}
