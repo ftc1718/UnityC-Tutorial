@@ -315,7 +315,7 @@ float2 ParallaxRaymarching(float2 uv, float2 viewDir)
 		#define PARALLAX_RAYMARCHING_SEARCH_STEPS 0
 	#endif
 	#if PARALLAX_RAYMARCHING_SEARCH_STEPS > 0
-		for (int i = 0; i < PARALLAX_RAYMARCHING_SEARCH_STEPS; i++)
+		for (int j = 0; j < PARALLAX_RAYMARCHING_SEARCH_STEPS; j++)
 		{
 			uvDelta *= 0.5;
 			stepSize *= 0.5;

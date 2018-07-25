@@ -34,6 +34,10 @@ Shader "Custom/FlatWireframe"
 		[HideInInspector] _SrcBlend ("_SrcBlend", Float) = 1
 		[HideInInspector] _DstBlend ("_DstBlend", Float) = 0
 		[HideInInspector] _ZWrite ("_ZWrite", Float) = 1
+
+		_WireframeColor ("Wireframe Color", Color) = (0, 0, 0, 1)
+		_WireframeSmoothing ("Wireframe Smoothing", Range(0, 10)) = 1
+		_WireframeThickness ("Wireframe Thickness", Range(0, 10)) = 1
 	}
 
 	CGINCLUDE

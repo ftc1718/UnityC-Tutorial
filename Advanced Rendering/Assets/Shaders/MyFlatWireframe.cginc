@@ -6,14 +6,22 @@
 
 #include "MyLightingInput.cginc"
 
+float3 _WireframeColor;
+float _WireframeSmoothing;
+float _WireframeThickness;
+
 float3 GetAlbedoWithWireframe(Interpolators i)
 {
 	float3 albedo = GetAlbedo(i);
     float3 barys;
     barys.xy = i.barycentricCoordinates;
     barys.z = 1- barys.x - barys.y;
-    albedo = barys;
-	return albedo;
+    float3 delta = fwidth(barys);
+    float3 smoothing = delta * _WireframeSmoothing;
+    float3 thickness = delta * _WireframeThickness;
+    barys = smoothstep(thickness, thickness + smoothing, barys);
+    float minBary = min(barys.x, min(barys.y, barys.z));
+	return lerp(_WireframeColor, albedo, minBary);
 }
 #define ALBEDO_FUNCTION GetAlbedoWithWireframe
 
@@ -29,6 +37,15 @@ struct InterpolatorsGeometry
 void geom(triangle InterpolatorsVertex i[3],
     inout TriangleStream<InterpolatorsGeometry> stream)
 {
+    float3 p0 = i[0].worldPos.xyz;
+    float3 p1 = i[1].worldPos.xyz;
+    float3 p2 = i[2].worldPos.xyz;
+    float3 triangleNormal = cross((p1 - p0), (p2 - p0));
+
+    i[0].normal = triangleNormal;
+    i[1].normal = triangleNormal;
+    i[2].normal = triangleNormal;
+
     InterpolatorsGeometry g0, g1, g2;
     g0.data = i[0];
     g1.data = i[1];
@@ -38,14 +55,6 @@ void geom(triangle InterpolatorsVertex i[3],
 	g1.barycentricCoordinates = float2(0, 1);
 	g2.barycentricCoordinates = float2(0, 0);
 
-    // float3 p0 = i[0].worldPos.xyz;
-    // float3 p1 = i[1].worldPos.xyz;
-    // float3 p2 = i[2].worldPos.xyz;
-    // float3 triangleNormal = cross((p1 - p0), (p2 - p0));
-
-    // i[0].normal.xyz = triangleNormal;
-    // i[1].normal.xyz = triangleNormal;
-    // i[2].normal.xyz = triangleNormal;
 
     stream.Append(g0);
     stream.Append(g1);
