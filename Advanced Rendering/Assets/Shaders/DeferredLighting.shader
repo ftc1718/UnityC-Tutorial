@@ -12,8 +12,8 @@ Shader "Custom/DeferredLighting"
 
             CGPROGRAM
             #pragma target 3.0
-            #pragma vertex vert
-            #pragma fragment frag
+            #pragma vertex VertexProgram
+            #pragma fragment FragmentProgram
 
             #pragma exclude_renderers nomrt
 
@@ -41,8 +41,8 @@ Shader "Custom/DeferredLighting"
 
             CGPROGRAM
             #pragma target 3.0
-            #pragma vertex vert
-            #pragma fragment frag
+            #pragma vertex VertexProgram
+            #pragma fragment FragmentProgram
 
             #pragma exclude_renderers nomrt
 
@@ -62,7 +62,7 @@ Shader "Custom/DeferredLighting"
                 float2 uv : TEXCOORD0;
             };
 
-            Interpolators vert(VertexData v)
+            Interpolators VertexProgram(VertexData v)
             {
                 Interpolators i;
                 i.pos = UnityObjectToClipPos(v.vertex);
@@ -70,7 +70,7 @@ Shader "Custom/DeferredLighting"
                 return i;
             }
 
-            float4 frag(Interpolators i) : SV_TARGET
+            float4 FragmentProgram(Interpolators i) : SV_TARGET
             {
                 return -log2(tex2D(_LightBuffer, i.uv));
             }

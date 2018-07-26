@@ -88,9 +88,9 @@ Shader "Custom/FlatWireframe"
 			#pragma multi_compile_instancing
 			#pragma instancing_options lodfade
 
-			#pragma vertex vert
-			#pragma fragment frag
-			#pragma geometry geom
+			#pragma vertex MyVertexProgram
+			#pragma fragment MyFragmentProgram
+			#pragma geometry MyGeometryProgram
 
 			#define FORWARD_BASE_PASS
 
@@ -130,9 +130,9 @@ Shader "Custom/FlatWireframe"
 
 			#pragma multi_compile _ LOD_FADE_CROSSFADE
 
-			#pragma vertex vert
-			#pragma fragment frag
-			#pragma geometry geom
+			#pragma vertex MyVertexProgram
+			#pragma fragment MyFragmentProgram
+			#pragma geometry MyGeometryProgram
 
 			#include "MyFlatWireframe.cginc"
 
@@ -170,9 +170,9 @@ Shader "Custom/FlatWireframe"
 
 			#pragma multi_compile _ LOD_FADE_CROSSFADE
 
-			#pragma vertex vert
-			#pragma fragment frag
-			#pragma geometry geom
+			#pragma vertex MyVertexProgram
+			#pragma fragment MyFragmentProgram
+			#pragma geometry MyGeometryProgram
 
 			#define DEFERRED_PASS
 
@@ -203,8 +203,8 @@ Shader "Custom/FlatWireframe"
 			#pragma multi_compile_instancing
 			#pragma instancing_options lodfade
 
-			#pragma vertex vert
-			#pragma fragment frag
+			#pragma vertex MyVertexProgram
+			#pragma fragment MyFragmentProgram
 
 			#include "MyShadows.cginc"
 			ENDCG
@@ -227,8 +227,8 @@ Shader "Custom/FlatWireframe"
 			#pragma shader_feature _DETAIL_MASK
 			#pragma shader_feature _DETAIL_ALBEDO_MAP
 
-			#pragma vertex vert
-			#pragma fragment frag
+			#pragma vertex MyVertexProgram
+			#pragma fragment MyFragmentProgram
 
 			#include "MyLightMapping.cginc"
 			ENDCG

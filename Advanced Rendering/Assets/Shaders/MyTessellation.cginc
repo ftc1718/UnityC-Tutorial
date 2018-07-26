@@ -17,7 +17,7 @@ struct TessellationControlPoint
 	float2 uv2 : TEXCOORD2;
 };
 
-TessellationControlPoint tessVert(VertexData v)
+TessellationControlPoint MyTessellationVertexProgram(VertexData v)
 {
     TessellationControlPoint p;
     p.vertex = v.vertex;
@@ -44,14 +44,14 @@ TessellationFactors MyPatchConstantFunction(InputPatch<TessellationControlPoint,
 [UNITY_outputtopology("triangle_cw")]
 [UNITY_partitioning("integer")]
 [UNITY_patchconstantfunc("MyPatchConstantFunction")]
-TessellationControlPoint tess(InputPatch<TessellationControlPoint, 3> patch,
+TessellationControlPoint MyHullProgram(InputPatch<TessellationControlPoint, 3> patch,
     uint id : SV_OutputControlPointID)
 {
     return patch[id];
 }
 
 [UNITY_domain("tri")]
-InterpolatorsVertex domain(TessellationFactors factors,
+InterpolatorsVertex MyDomainProgram(TessellationFactors factors,
     OutputPatch<TessellationControlPoint, 3> patch,
     float3 barycentricCoordinates : SV_DomainLocation)
 {
@@ -69,6 +69,6 @@ InterpolatorsVertex domain(TessellationFactors factors,
     MY_DOMAIN_PROGRAM_INTERPOLATE(uv1)
     MY_DOMAIN_PROGRAM_INTERPOLATE(uv2)
 
-    return vert(data);
+    return MyVertexProgram(data);
 }
 #endif

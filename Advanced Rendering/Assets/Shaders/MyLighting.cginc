@@ -362,7 +362,7 @@ void ApplyParallax(inout Interpolators i)
 	#endif
 }
 
-InterpolatorsVertex vert(VertexData v)
+InterpolatorsVertex MyVertexProgram(VertexData v)
 {
 	InterpolatorsVertex i;
 	// i = (Interpolators)0; // UNITY_INITIALIZE_OUTPUT(Interpolators, i);
@@ -427,7 +427,7 @@ InterpolatorsVertex vert(VertexData v)
 	return i;
 }
 
-FragmentOutput frag(Interpolators i)
+FragmentOutput MyFragmentProgram(Interpolators i)
 {
 	UNITY_SETUP_INSTANCE_ID(i);
 	#if defined(LOD_FADE_CROSSFADE)

@@ -130,7 +130,7 @@ struct Interpolators
     float3 ray : TEXCOORD1;
 };
 
-Interpolators vert(VertexData v)
+Interpolators VertexProgram(VertexData v)
 {
     Interpolators i;
     i.pos = UnityObjectToClipPos(v.vertex);
@@ -143,7 +143,7 @@ Interpolators vert(VertexData v)
     return i;
 }
 
-float4 frag(Interpolators i) : SV_TARGET
+float4 FragmentProgram(Interpolators i) : SV_TARGET
 {
     float2 uv = i.uv.xy / i.uv.w;
 

@@ -82,7 +82,7 @@ float GetSmoothness(Interpolators i)
 		return smoothness * _Smoothness;
 }
 
-Interpolators vert(VertexData v)
+Interpolators MyLightmappingVertexProgram(VertexData v)
 {
 	Interpolators i;
 	// v.vertex.xy = v.uv1 * unity_LightmapST.xy + unity_LightmapST.zw;
@@ -97,7 +97,7 @@ Interpolators vert(VertexData v)
 	return i;
 }
 
-float4 frag(Interpolators i) : SV_TARGET
+float4 MyLightmappingFragmentProgram(Interpolators i) : SV_TARGET
 {
 	UnityMetaInput surfaceData;
 	surfaceData.Emission = GetEmission(i);

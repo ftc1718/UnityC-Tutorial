@@ -82,7 +82,7 @@ float GetAlpha(Interpolators i)
 	return alpha;
 }
 
-InterpolatorsVertex vert(VertexData v)
+InterpolatorsVertex MyShadowVertexProgram(VertexData v)
 {
     InterpolatorsVertex i;
     UNITY_SETUP_INSTANCE_ID(v);
@@ -103,7 +103,7 @@ InterpolatorsVertex vert(VertexData v)
     return i;
 }
 
-float4 frag(Interpolators i) : SV_TARGET
+float4 MyShadowFragmentProgram(Interpolators i) : SV_TARGET
 {
     UNITY_SETUP_INSTANCE_ID(i);
 

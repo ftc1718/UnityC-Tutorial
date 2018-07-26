@@ -88,12 +88,11 @@ Shader "Custom/Tessellation"
 			// #pragma multi_compile_instancing
 			// #pragma instancing_options lodfade
 
-			#pragma vertex vert
-			#pragma fragment frag
-			#pragma vertex tessVert
-			#pragma hull tess
-			#pragma domain domain
-			#pragma geometry geom
+			#pragma vertex MyTessellationVertexProgram
+			#pragma fragment MyFragmentProgram
+			#pragma hull MyHullProgram
+			#pragma domain MyDomainProgram
+			#pragma geometry MyGeometryProgram
 
 			#define FORWARD_BASE_PASS
 
@@ -134,12 +133,11 @@ Shader "Custom/Tessellation"
 
 			#pragma multi_compile _ LOD_FADE_CROSSFADE
 
-			#pragma vertex vert
-			#pragma fragment frag
-			#pragma vertex tessVert
-			#pragma hull tess
-			#pragma domain domain
-			#pragma geometry geom
+			#pragma vertex MyTessellationVertexProgram
+			#pragma fragment MyFragmentProgram
+			#pragma hull MyHullProgram
+			#pragma domain MyDomainProgram
+			#pragma geometry MyGeometryProgram
 
 			#include "MyFlatWireframe.cginc"
 			#include "MyTessellation.cginc"
@@ -178,12 +176,11 @@ Shader "Custom/Tessellation"
 
 			#pragma multi_compile _ LOD_FADE_CROSSFADE
 
-			#pragma vertex vert
-			#pragma fragment frag
-			#pragma vertex tessVert
-			#pragma hull tess
-			#pragma domain domain
-			#pragma geometry geom
+			#pragma vertex MyTessellationVertexProgram
+			#pragma fragment MyFragmentProgram
+			#pragma hull MyHullProgram
+			#pragma domain MyDomainProgram
+			#pragma geometry MyGeometryProgram
 
 			#define DEFERRED_PASS
 
@@ -215,8 +212,8 @@ Shader "Custom/Tessellation"
 			#pragma multi_compile_instancing
 			#pragma instancing_options lodfade
 
-			#pragma vertex vert
-			#pragma fragment frag
+			#pragma vertex MyShadowVertexProgram
+			#pragma fragment MyShadowFragmentProgram
 
 			#include "MyShadows.cginc"
 			ENDCG
@@ -239,8 +236,8 @@ Shader "Custom/Tessellation"
 			#pragma shader_feature _DETAIL_MASK
 			#pragma shader_feature _DETAIL_ALBEDO_MAP
 
-			#pragma vertex vert
-			#pragma fragment frag
+			#pragma vertex MyLightmappingVertexProgram
+			#pragma fragment MyLightmappingFragmentProgram
 
 			#include "MyLightMapping.cginc"
 			ENDCG

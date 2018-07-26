@@ -14,8 +14,8 @@
 		{
 			CGPROGRAM
 
-			#pragma vertex vert
-			#pragma fragment frag
+			#pragma vertex VertexProgram
+			#pragma fragment FragmentProgram
 
 			#pragma multi_compile_fog
 
@@ -45,7 +45,7 @@
 				#endif
 			};
 
-			Interpolators vert(VertexData v)
+			Interpolators VertProgram(VertexData v)
 			{
 				Interpolators i;
 				i.pos = UnityObjectToClipPos(v.vertex);
@@ -58,7 +58,7 @@
 				return i;
 			}
 
-			float4 frag(Interpolators i) : SV_TARGET
+			float4 FragmentProgram(Interpolators i) : SV_TARGET
 			{
 				float depth = SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, i.uv);
 				depth = Linear01Depth(depth);

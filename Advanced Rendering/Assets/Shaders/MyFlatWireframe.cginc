@@ -34,7 +34,7 @@ struct InterpolatorsGeometry
 };
 
 [maxvertexcount(3)]
-void geom(triangle InterpolatorsVertex i[3],
+void MyGeometryProgram(triangle InterpolatorsVertex i[3],
     inout TriangleStream<InterpolatorsGeometry> stream)
 {
     float3 p0 = i[0].worldPos.xyz;
