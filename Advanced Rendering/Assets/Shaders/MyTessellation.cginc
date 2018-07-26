@@ -32,10 +32,10 @@ TessellationControlPoint MyTessellationVertexProgram(VertexData v)
 TessellationFactors MyPatchConstantFunction(InputPatch<TessellationControlPoint, 3> patch)
 {
     TessellationFactors f;
-    f.edge[0] = 1;
-    f.edge[1] = 1;
-    f.edge[2] = 1;
-    f.inside = 1;
+    f.edge[0] = 2;
+    f.edge[1] = 2;
+    f.edge[2] = 2;
+    f.inside = 2;
     return f;
 }
 

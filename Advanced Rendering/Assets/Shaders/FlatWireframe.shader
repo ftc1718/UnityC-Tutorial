@@ -1,6 +1,4 @@
-﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
-
-Shader "Custom/FlatWireframe"
+﻿Shader "Custom/FlatWireframe"
 {
 	Properties
 	{
@@ -203,8 +201,8 @@ Shader "Custom/FlatWireframe"
 			#pragma multi_compile_instancing
 			#pragma instancing_options lodfade
 
-			#pragma vertex MyVertexProgram
-			#pragma fragment MyFragmentProgram
+			#pragma vertex MyShadowVertexProgram
+			#pragma fragment MyShadowFragmentProgram
 
 			#include "MyShadows.cginc"
 			ENDCG
@@ -227,8 +225,8 @@ Shader "Custom/FlatWireframe"
 			#pragma shader_feature _DETAIL_MASK
 			#pragma shader_feature _DETAIL_ALBEDO_MAP
 
-			#pragma vertex MyVertexProgram
-			#pragma fragment MyFragmentProgram
+			#pragma vertex MyLightmappingVertexProgram
+			#pragma fragment MyLightmappingFragmentProgram
 
 			#include "MyLightMapping.cginc"
 			ENDCG

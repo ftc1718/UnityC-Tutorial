@@ -7,7 +7,7 @@ Material:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_Name: FlatMat
-  m_Shader: {fileID: 4800000, guid: bcfc470e8f9f6db4b8c58c5e0ed3483c, type: 3}
+  m_Shader: {fileID: 4800000, guid: fbe5388c068b944d8ad5def744058faf, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -85,11 +85,11 @@ Material:
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _UVSec: 0
-    - _WireframeSmoothing: 2.4
+    - _WireframeSmoothing: 2.72
     - _WireframeThickness: 0
     - _ZWrite: 1
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _Emission: {r: 0, g: 0, b: 0, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _WireframeColor: {r: 0.012435133, g: 0.8455882, b: 0.32845873, a: 1}
+    - _WireframeColor: {r: 0.26967993, g: 0.31617647, b: 0.31617647, a: 0}
