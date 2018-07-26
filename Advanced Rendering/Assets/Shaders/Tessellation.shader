@@ -38,6 +38,10 @@ Shader "Custom/Tessellation"
 		_WireframeColor ("Wireframe Color", Color) = (0, 0, 0, 1)
 		_WireframeSmoothing ("Wireframe Smoothing", Range(0, 10)) = 1
 		_WireframeThickness ("Wireframe Thickness", Range(0, 10)) = 1
+
+		_TessellationUniform ("Tessellation Uniform", Range(1, 64)) = 1
+		// _TessellationEdgeLength ("Tessellation Edge Length", Range(0.1, 1)) = 0.5 // world space
+		_TessellationEdgeLength ("Tessellation Edge Length", Range(5, 100)) = 50 // pixel
 	}
 
 	CGINCLUDE
@@ -78,6 +82,7 @@ Shader "Custom/Tessellation"
 			#pragma shader_feature _DETAIL_ALBEDO_MAP
 			#pragma shader_feature _DETAIL_NORMAL_MAP
 			#pragma shader_feature _PARALLAX_MAP
+			#pragma shader_feature _TESSELLATION_EDGE
 
 			#pragma shader_feature _ _RENDERING_CUTOUT _RENDERING_FADE _RENDERING_TRANSPARENT
 
@@ -126,6 +131,7 @@ Shader "Custom/Tessellation"
 			#pragma shader_feature _DETAIL_ALBEDO_MAP
 			#pragma shader_feature _DETAIL_NORMAL_MAP
 			#pragma shader_feature _PARALLAX_MAP
+			#pragma shader_feature _TESSELLATION_EDGE
 
 			#pragma shader_feature _ _RENDERING_CUTOUT _RENDERING_FADE _RENDERING_TRANSPARENT
 
@@ -167,6 +173,7 @@ Shader "Custom/Tessellation"
 			#pragma shader_feature _DETAIL_ALBEDO_MAP
 			#pragma shader_feature _DETAIL_NORMAL_MAP
 			#pragma shader_feature _PARALLAX_MAP
+			#pragma shader_feature _TESSELLATION_EDGE
 
 			#pragma multi_compile_prepassfinal
 

@@ -7,8 +7,8 @@ Material:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_Name: FlatMat
-  m_Shader: {fileID: 4800000, guid: fbe5388c068b944d8ad5def744058faf, type: 3}
-  m_ShaderKeywords: 
+  m_Shader: {fileID: 4800000, guid: 7b1ae1cbc382aa744af6c5840825fbd6, type: 3}
+  m_ShaderKeywords: TESSELLATION_EDGE _TESSELLATION_EDGE
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -84,12 +84,14 @@ Material:
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
+    - _TessellationEdgeLength: 56
+    - _TessellationUniform: 1
     - _UVSec: 0
-    - _WireframeSmoothing: 2.72
+    - _WireframeSmoothing: 1
     - _WireframeThickness: 0
     - _ZWrite: 1
     m_Colors:
-    - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _Color: {r: 0.6764706, g: 0.6764706, b: 0.6764706, a: 1}
     - _Emission: {r: 0, g: 0, b: 0, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _WireframeColor: {r: 0.26967993, g: 0.31617647, b: 0.31617647, a: 0}
+    - _WireframeColor: {r: 0, g: 0, b: 0, a: 0}

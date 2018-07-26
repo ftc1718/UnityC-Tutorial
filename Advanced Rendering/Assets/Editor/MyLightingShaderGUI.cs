@@ -24,6 +24,11 @@ public class MyLightingShaderGUI : ShaderGUI
         Opaque, Cutout, Fade, Transparent
     }
 
+    enum TessellationMode
+    {
+        Uniform, Edge
+    }
+
     struct RenderingSettings
     {
         public RenderQueue queue;
@@ -71,6 +76,10 @@ public class MyLightingShaderGUI : ShaderGUI
         this.editor = editor;
         this.properties = properties;
         DoRenderingMode();
+        if(target.HasProperty("_TessellationUniform"))
+        {
+            DoTessellation();
+        }
         if(target.HasProperty("_WireframeColor"))
         {
             DoWireframe();
@@ -401,6 +410,41 @@ public class MyLightingShaderGUI : ShaderGUI
             FindProperty("_WireframeThickness"),
             MakeLabel("Thickness", "In screen space.")
         );
+        EditorGUI.indentLevel -= 2;
+    }
+
+    void DoTessellation()
+    {
+        GUILayout.Label("Tessellation", EditorStyles.boldLabel);
+        EditorGUI.indentLevel += 2;
+
+        TessellationMode mode = TessellationMode.Uniform;
+        if(IsKeywordEnabled("_TESSELLATION_EDGE"))
+        {
+            mode = TessellationMode.Edge;
+        }
+        EditorGUI.BeginChangeCheck();
+        mode = (TessellationMode)EditorGUILayout.EnumPopup(MakeLabel("Mode"), mode);
+        if(EditorGUI.EndChangeCheck())
+        {
+            RecordAction("Tessellation Mode");
+            SetKeyword("_TESSELLATION_EDGE", mode == TessellationMode.Edge);
+        }
+
+        if(mode == TessellationMode.Uniform)
+        {
+            editor.ShaderProperty(
+                FindProperty("_TessellationUniform"),
+                MakeLabel("Uniform")
+            );
+        }
+        else
+        {
+            editor.ShaderProperty(
+                FindProperty("_TessellationEdgeLength"),
+                MakeLabel("Edge Length")
+            );
+        }
         EditorGUI.indentLevel -= 2;
     }
 
