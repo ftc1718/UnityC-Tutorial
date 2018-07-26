@@ -45,7 +45,7 @@
 				#endif
 			};
 
-			Interpolators VertProgram(VertexData v)
+			Interpolators VertexProgram(VertexData v)
 			{
 				Interpolators i;
 				i.pos = UnityObjectToClipPos(v.vertex);
