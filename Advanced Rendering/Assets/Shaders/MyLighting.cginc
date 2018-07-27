@@ -369,6 +369,18 @@ InterpolatorsVertex MyVertexProgram(VertexData v)
 	UNITY_SETUP_INSTANCE_ID(v);
 	UNITY_TRANSFER_INSTANCE_ID(v, i);
 
+	i.uv.xy = TRANSFORM_TEX(v.uv, _MainTex);
+	i.uv.zw = TRANSFORM_TEX(v.uv, _DetailTex);
+	// i.uv.xy = v.uv * _MainTex_ST.xy + _MainTex_ST.zw;
+	// i.uv.zw = v.uv * _DetailTex_ST.xy + _DetailTex_ST.zw;
+
+	#if VERTEX_DISPLACEMENT
+		float displacement = tex2Dlod(_DisplacementMap, float4(i.uv.xy, 0, 0)).g;
+		displacement = (displacement - 0.5) * _DisplacementStrength;
+		v.normal = normalize(v.normal);
+		v.vertex.xyz += v.normal * displacement;
+	#endif
+
 	i.pos = UnityObjectToClipPos(v.vertex);
 	i.worldPos.xyz = mul(unity_ObjectToWorld, v.vertex);
 
@@ -384,11 +396,6 @@ InterpolatorsVertex MyVertexProgram(VertexData v)
 		i.tangent = UnityObjectToWorldDir(v.tangent.xyz);
 		i.binormal = CreateBinormal(i.normal, i.tangent, v.tangent.w);
 	#endif
-
-	i.uv.xy = TRANSFORM_TEX(v.uv, _MainTex);
-	i.uv.zw = TRANSFORM_TEX(v.uv, _DetailTex);
-	// i.uv.xy = v.uv * _MainTex_ST.xy + _MainTex_ST.zw;
-	// i.uv.zw = v.uv * _DetailTex_ST.xy + _DetailTex_ST.zw;
 
 	#if defined(LIGHTMAP_ON) || ADDITIONAL_MASKED_DIRECTIONAL_SHADOWS
 		// i.lightmapUV = TRANSFORM_TEX(v.uv1, unity_Lightmap); // not unity_Lightmap_ST

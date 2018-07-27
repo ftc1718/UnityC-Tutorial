@@ -29,15 +29,15 @@ Shader "Custom/Tessellation"
 		_Cutoff ("Alpha Cutoff", Range(0, 1)) = 0.5
 
 		[NoScaleOffset] _ParallaxMap ("Parallax", 2D) = "black" {}
-		_ParallaxStrength ("Parallax Strength", Range(0, 0.1)) = 0
+		_ParallaxStrength ("Parallax Strength", Range(0, 1)) = 0
 
 		[HideInInspector] _SrcBlend ("_SrcBlend", Float) = 1
 		[HideInInspector] _DstBlend ("_DstBlend", Float) = 0
 		[HideInInspector] _ZWrite ("_ZWrite", Float) = 1
 
-		_WireframeColor ("Wireframe Color", Color) = (0, 0, 0, 1)
-		_WireframeSmoothing ("Wireframe Smoothing", Range(0, 10)) = 1
-		_WireframeThickness ("Wireframe Thickness", Range(0, 10)) = 1
+		// _WireframeColor ("Wireframe Color", Color) = (0, 0, 0, 1)
+		// _WireframeSmoothing ("Wireframe Smoothing", Range(0, 10)) = 1
+		// _WireframeThickness ("Wireframe Thickness", Range(0, 10)) = 1
 
 		_TessellationUniform ("Tessellation Uniform", Range(1, 64)) = 1
 		// _TessellationEdgeLength ("Tessellation Edge Length", Range(0.1, 1)) = 0.5 // world space
@@ -49,13 +49,7 @@ Shader "Custom/Tessellation"
 	#define BINORMAL_PER_FRAGMENT
 	#define FOG_DISTANCE
 
-	#define PARALLAX_BIAS 0
-	// #define PARALLAX_OFFSET_LIMITING
-	#define PARALLAX_RAYMARCHING_STEPS 10
-	#define PARALLAX_RAYMARCHING_INTERPOLATE
-	#define PARALLAX_RAYMARCHING_SEARCH_STEPS 3
-	#define PARALLAX_FUNCTION ParallaxRaymarching
-	#define PARALLAX_SUPPORT_SCALED_DYNAMIC_BATCHING
+	#define VERTEX_DISPLACEMENT_INSTEAD_OF_PARALLAX
 
 	ENDCG
 
@@ -97,11 +91,12 @@ Shader "Custom/Tessellation"
 			#pragma fragment MyFragmentProgram
 			#pragma hull MyHullProgram
 			#pragma domain MyDomainProgram
-			#pragma geometry MyGeometryProgram
+			// #pragma geometry MyGeometryProgram //disable Tessellation wireFrame
 
 			#define FORWARD_BASE_PASS
 
-			#include "MyFlatWireframe.cginc"
+			// #include "MyFlatWireframe.cginc"
+			#include "MyLighting.cginc"
 			#include "MyTessellation.cginc"
 
 			ENDCG
@@ -143,9 +138,10 @@ Shader "Custom/Tessellation"
 			#pragma fragment MyFragmentProgram
 			#pragma hull MyHullProgram
 			#pragma domain MyDomainProgram
-			#pragma geometry MyGeometryProgram
+			// #pragma geometry MyGeometryProgram
 
-			#include "MyFlatWireframe.cginc"
+			// #include "MyFlatWireframe.cginc"
+			#include "MyLighting.cginc"
 			#include "MyTessellation.cginc"
 
 			ENDCG
@@ -187,11 +183,12 @@ Shader "Custom/Tessellation"
 			#pragma fragment MyFragmentProgram
 			#pragma hull MyHullProgram
 			#pragma domain MyDomainProgram
-			#pragma geometry MyGeometryProgram
+			// #pragma geometry MyGeometryProgram
 
 			#define DEFERRED_PASS
 
-			#include "MyFlatWireframe.cginc"
+			// #include "MyFlatWireframe.cginc"
+			#include "MyLighting.cginc"
 			#include "MyTessellation.cginc"
 
 			ENDCG

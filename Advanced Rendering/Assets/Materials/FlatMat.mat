@@ -7,7 +7,7 @@ Material:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_Name: FlatMat
-  m_Shader: {fileID: 4800000, guid: 7b1ae1cbc382aa744af6c5840825fbd6, type: 3}
+  m_Shader: {fileID: 4800000, guid: bcfc470e8f9f6db4b8c58c5e0ed3483c, type: 3}
   m_ShaderKeywords: TESSELLATION_EDGE _TESSELLATION_EDGE
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
