@@ -42,10 +42,19 @@ float TessellationEdgeFactor(TessellationControlPoint cp0, TessellationControlPo
         // return edgeLength / _TessellationEdgeLength;
 
         // screen space pixel
-        float4 p0 = UnityObjectToClipPos(cp0.vertex);
-        float4 p1 = UnityObjectToClipPos(cp1.vertex);
-        float edgeLength = distance(p0.xy / p0.w, p1.xy / p1.w);
-        return edgeLength * _ScreenParams.y / _TessellationEdgeLength;
+        // float4 p0 = UnityObjectToClipPos(cp0.vertex);
+        // float4 p1 = UnityObjectToClipPos(cp1.vertex);
+        // float edgeLength = distance(p0.xy / p0.w, p1.xy / p1.w);
+        // return edgeLength * _ScreenParams.y / _TessellationEdgeLength;
+
+        // view distance
+        float3 p0 = mul(unity_ObjectToWorld, float4(cp0.vertex.xyz, 1)).xyz;
+        float3 p1 = mul(unity_ObjectToWorld, float4(cp1.vertex.xyz, 1)).xyz;
+        float edgeLength = distance(p0, p1);
+
+        float3 edgeCenter = (p0 + p1) * 0.5;
+        float viewDistance = distance(edgeCenter, _WorldSpaceCameraPos);
+        return edgeLength * _ScreenParams.y / (_TessellationEdgeLength * viewDistance);
     #else
         return _TessellationUniform;
     #endif
