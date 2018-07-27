@@ -119,7 +119,7 @@ InterpolatorsVertex MyDomainProgram(TessellationFactors factors,
     OutputPatch<TessellationControlPoint, 3> patch,
     float3 barycentricCoordinates : SV_DomainLocation)
 {
-    VertexData data;
+    VertexData data = (VertexData)0;
 
     #define MY_DOMAIN_PROGRAM_INTERPOLATE(fieldName) data.fieldName = \
 		patch[0].fieldName * barycentricCoordinates.x + \
