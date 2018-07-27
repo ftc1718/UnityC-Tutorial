@@ -17,6 +17,16 @@
     #endif
 #endif
 
+#if defined(_PARALLAX_MAP) && defined(VERTEX_DISPLACEMENT_INSTEAD_OF_PARALLAX)
+	#undef _PARALLAX_MAP
+	#define VERTEX_DISPLACEMENT 1
+	#define _DisplacementMap _ParallaxMap
+	#define _DisplacementStrength _ParallaxStrength
+	#if !defined(SHADOWS_NEED_UV)
+		#define SHADOWS_NEED_UV 1
+	#endif
+#endif
+
 UNITY_INSTANCING_CBUFFER_START(InstanceProperties)
 	UNITY_DEFINE_INSTANCED_PROP(float4, _Color)
 UNITY_INSTANCING_CBUFFER_END
@@ -27,10 +37,13 @@ float4 _MainTex_ST;
 float _Cutoff;
 sampler3D _DitherMaskLOD;
 
+sampler2D _ParallaxMap;
+float _ParallaxStrength;
+
 struct VertexData
 {
     UNITY_VERTEX_INPUT_INSTANCE_ID
-    float4 position : POSITION;
+    float4 vertex : POSITION;
     float3 normal : NORMAL;
     float2 uv : TEXCOORD0;
 };
@@ -82,22 +95,30 @@ float GetAlpha(Interpolators i)
 	return alpha;
 }
 
+#define MyVertexProgram MyShadowVertexProgram
 InterpolatorsVertex MyShadowVertexProgram(VertexData v)
 {
     InterpolatorsVertex i;
     UNITY_SETUP_INSTANCE_ID(v);
 	UNITY_TRANSFER_INSTANCE_ID(v, i);
 
-    #if defined(SHADOWS_CUBE)
-        i.position = UnityObjectToClipPos(v.position);
-        i.lightVec = mul(unity_ObjectToWorld, v.position).xyz - _LightPositionRange.xyz;
-    #else
-        i.position = UnityClipSpaceShadowCasterPos(v.position.xyz, v.normal);
-        i.position = UnityApplyLinearShadowBias(i.position);
-    #endif
-
     #if SHADOWS_NEED_UV
         i.uv = TRANSFORM_TEX(v.uv, _MainTex);
+    #endif
+    
+    #if VERTEX_DISPLACEMENT
+		float displacement = tex2Dlod(_DisplacementMap, float4(i.uv.xy, 0, 0)).g;
+		displacement = (displacement - 0.5) * _DisplacementStrength;
+		v.normal = normalize(v.normal);
+		v.vertex.xyz += v.normal * displacement;
+	#endif
+
+    #if defined(SHADOWS_CUBE)
+        i.position = UnityObjectToClipPos(v.vertex);
+        i.lightVec = mul(unity_ObjectToWorld, v.vertex).xyz - _LightPositionRange.xyz;
+    #else
+        i.position = UnityClipSpaceShadowCasterPos(v.vertex.xyz, v.normal);
+        i.position = UnityApplyLinearShadowBias(i.position);
     #endif
 
     return i;

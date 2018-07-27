@@ -4,6 +4,10 @@
 #include "UnityPBSLighting.cginc"
 #include "AutoLight.cginc"
 
+#define TESSELLATION_TANGENT 1
+#define TESSELLATION_UV1 1
+#define TESSELLATION_UV2 1
+
 #if defined(_PARALLAX_MAP) && defined(VERTEX_DISPLACEMENT_INSTEAD_OF_PARALLAX)
 	#undef _PARALLAX_MAP
 	#define VERTEX_DISPLACEMENT 1

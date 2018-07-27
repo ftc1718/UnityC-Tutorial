@@ -14,10 +14,16 @@ struct TessellationControlPoint
 {
 	float4 vertex : INTERNALTESSPOS;
 	float3 normal : NORMAL;
-	float4 tangent : TANGENT;
+    #if TESSELLATION_TANGENT
+        float4 tangent : TANGENT;
+    #endif
 	float2 uv : TEXCOORD0;
-	float2 uv1 : TEXCOORD1;
-	float2 uv2 : TEXCOORD2;
+    #if TESSELLATION_UV1
+        float2 uv1 : TEXCOORD1;
+    #endif
+    #if TESSELLATION_UV2
+        float2 uv2 : TEXCOORD2;
+    #endif
 };
 
 TessellationControlPoint MyTessellationVertexProgram(VertexData v)
@@ -25,10 +31,16 @@ TessellationControlPoint MyTessellationVertexProgram(VertexData v)
     TessellationControlPoint p;
     p.vertex = v.vertex;
     p.normal = v.normal;
-    p.tangent = v.tangent;
+    #if TESSELLATION_TANGENT
+        p.tangent = v.tangent;
+    #endif
     p.uv = v.uv;
-    p.uv1 = v.uv1;
-    p.uv2 = v.uv2;
+    #if TESSELLATION_UV1
+        p.uv1 = v.uv1;
+    #endif
+    #if TESSELLATION_UV2
+        p.uv2 = v.uv2;
+    #endif
     return p;
 }
 
@@ -89,10 +101,16 @@ InterpolatorsVertex MyDomainProgram(TessellationFactors factors,
 
 	MY_DOMAIN_PROGRAM_INTERPOLATE(vertex)
     MY_DOMAIN_PROGRAM_INTERPOLATE(normal)
-    MY_DOMAIN_PROGRAM_INTERPOLATE(tangent)
+    #if TESSELLATION_TANGENT
+        MY_DOMAIN_PROGRAM_INTERPOLATE(tangent)
+    #endif
     MY_DOMAIN_PROGRAM_INTERPOLATE(uv)
-    MY_DOMAIN_PROGRAM_INTERPOLATE(uv1)
-    MY_DOMAIN_PROGRAM_INTERPOLATE(uv2)
+    #if TESSELLATION_UV1
+        MY_DOMAIN_PROGRAM_INTERPOLATE(uv1)
+    #endif
+    #if TESSELLATION_UV2
+        MY_DOMAIN_PROGRAM_INTERPOLATE(uv2)
+    #endif
 
     return MyVertexProgram(data);
 }
