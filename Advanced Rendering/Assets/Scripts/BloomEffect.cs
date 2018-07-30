@@ -1,18 +1,31 @@
-﻿using System.Collections;
-using UnityEngine;
+﻿using UnityEngine;
+using System;
 
 [ExecuteInEditMode, ImageEffectAllowedInSceneView]
 public class BloomEffect : MonoBehaviour
 {
+    [Range(0, 10)]
+    public float intensity = 1;
 	[Range(1, 16)]
     public int iterations = 4;
-    public Shader bloomShader;
+    [Range(1, 10)]
+    public int threshold = 1;
+    [Range(1, 10)]
+    public float softThreshold = 0.5f;
 
-    [System.NonSerialized]
+    public Shader bloomShader;
+    public bool debug;
+
+    [NonSerialized]
     Material bloom;
 
-    const int BoxDownPass = 0;
-    const int BoxUpPass = 1;
+    const int BoxDownPrefilterPass = 0;
+    const int BoxDownPass = 1;
+    const int BoxUpPass = 2;
+    const int ApplyBloomPass = 3;
+    const int DebugBloomPass = 4;
+
+    RenderTexture[] textures = new RenderTexture[16];
 
     void OnRenderImage(RenderTexture src, RenderTexture dest)
 	{
@@ -21,13 +34,27 @@ public class BloomEffect : MonoBehaviour
             bloom = new Material(bloomShader);
             bloom.hideFlags = HideFlags.HideAndDontSave;
         }
-        RenderTexture[] textures = new RenderTexture[16];
+
+        // bloom.SetFloat("_Threshold", threshold);
+        // bloom.SetFloat("_SoftThreshold", softThreshold);
+
+        // caculate threshold in script
+        float knee = threshold * softThreshold;
+		Vector4 filter;
+		filter.x = threshold;
+		filter.y = filter.x - knee;
+		filter.z = 2f * knee;
+		filter.w = 0.25f / (knee + 0.00001f);
+		bloom.SetVector("_Filter", filter);
+        
+        bloom.SetFloat("_Intensity", Mathf.GammaToLinearSpace(intensity));
+
         int width = src.width / 2;
         int height = src.height / 2;
         RenderTextureFormat format = src.format;
         RenderTexture currentDestination = textures[0] =
 			RenderTexture.GetTemporary(width, height, 0, format);
-        Graphics.Blit(src, currentDestination, bloom, BoxDownPass);
+        Graphics.Blit(src, currentDestination, bloom, BoxDownPrefilterPass);
         RenderTexture currentSource = currentDestination;
 
         int i = 1;
@@ -54,7 +81,15 @@ public class BloomEffect : MonoBehaviour
             currentSource = currentDestination;
         }
 
-		Graphics.Blit(currentSource, dest, bloom, BoxUpPass);
+        if(debug)
+        {
+            Graphics.Blit(currentSource, dest, bloom, DebugBloomPass);
+        }
+        else
+        {
+            bloom.SetTexture("_SourceTex", src);
+            Graphics.Blit(currentSource, dest, bloom, ApplyBloomPass);
+        }
         RenderTexture.ReleaseTemporary(currentSource);
     }
 }
