@@ -5,11 +5,14 @@ using UnityEngine;
 public class BloomEffect : MonoBehaviour
 {
 	[Range(1, 16)]
-    public int iterations = 1;
+    public int iterations = 4;
     public Shader bloomShader;
 
     [System.NonSerialized]
     Material bloom;
+
+    const int BoxDownPass = 0;
+    const int BoxUpPass = 1;
 
     void OnRenderImage(RenderTexture src, RenderTexture dest)
 	{
@@ -24,7 +27,7 @@ public class BloomEffect : MonoBehaviour
         RenderTextureFormat format = src.format;
         RenderTexture currentDestination = textures[0] =
 			RenderTexture.GetTemporary(width, height, 0, format);
-        Graphics.Blit(src, currentDestination, bloom);
+        Graphics.Blit(src, currentDestination, bloom, BoxDownPass);
         RenderTexture currentSource = currentDestination;
 
         int i = 1;
@@ -38,7 +41,7 @@ public class BloomEffect : MonoBehaviour
             }
             currentDestination = textures[i] =
                 RenderTexture.GetTemporary(width, height, 0, format);
-            Graphics.Blit(currentSource, currentDestination, bloom);
+            Graphics.Blit(currentSource, currentDestination, bloom, BoxDownPass);
             currentSource = currentDestination;
         }
 
@@ -46,12 +49,12 @@ public class BloomEffect : MonoBehaviour
 		{
             currentDestination = textures[i];
             textures[i] = null;
-            Graphics.Blit(currentSource, currentDestination, bloom);
+            Graphics.Blit(currentSource, currentDestination, bloom, BoxUpPass);
             RenderTexture.ReleaseTemporary(currentSource);
             currentSource = currentDestination;
         }
 
-		Graphics.Blit(currentSource, dest, bloom);
+		Graphics.Blit(currentSource, dest, bloom, BoxUpPass);
         RenderTexture.ReleaseTemporary(currentSource);
     }
 }
