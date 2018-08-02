@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.18028334, g: 0.22571328, b: 0.3069217, a: 1}
+  m_IndirectSpecularColor: {r: 0.18028334, g: 0.2257134, b: 0.30692226, a: 1}
 --- !u!157 &3
 LightmapSettings:
   m_ObjectHideFlags: 0
@@ -1171,6 +1171,7 @@ Camera:
   m_TargetEye: 3
   m_HDR: 1
   m_AllowMSAA: 1
+  m_AllowDynamicResolution: 0
   m_ForceIntoRT: 0
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
@@ -1182,7 +1183,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 686356037}
   m_LocalRotation: {x: -0.3005001, y: 0.114097245, z: -0.03624087, w: -0.946239}
-  m_LocalPosition: {x: 1.633515, y: 4.8544583, z: -6.6752462}
+  m_LocalPosition: {x: 1.6335149, y: 4.8544583, z: -6.6752462}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -1199,11 +1200,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e7c9ebc214b0141c6a6ecf1e7443f3f0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  intensity: 1.06
-  iterations: 4
-  threshold: 1
-  softThreshold: 1
   bloomShader: {fileID: 4800000, guid: 926e8db920ab84661b115e2bdbc8199b, type: 3}
+  intensity: 1
+  iterations: 5
+  threshold: 1
+  softThreshold: 0.5
   debug: 0
 --- !u!1 &716196512
 GameObject:
