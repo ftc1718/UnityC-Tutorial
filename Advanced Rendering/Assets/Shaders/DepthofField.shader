@@ -8,7 +8,7 @@ Shader "Custom/DepthofFiled"
     CGINCLUDE
     #include "UnityCG.cginc"
 
-    sampler2D _MainTex, _CameraDepthTexture, _CocTex;
+    sampler2D _MainTex, _CameraDepthTexture, _CoCTex;
     float4 _MainTex_TexelSize;
 
     float _FocusDistance, _FocusRange;
@@ -143,13 +143,20 @@ Shader "Custom/DepthofFiled"
             half4 FragmentProgram(Interpolators i) : SV_TARGET
             {
                 half3 color = 0;
+                half weight = 0;
                 for(int k = 0; k < kernelSampleCount; k++)
                 {
-                    float2 o = kernel[k];
-                    o *= _MainTex_TexelSize * _BokehRadius;
-                    color += tex2D(_MainTex, i.uv + o).rgb;
+                    float2 o = kernel[k] * _BokehRadius;
+                    half radius = length(o);
+                    o *= _MainTex_TexelSize.xy;
+                    half4 s = tex2D(_MainTex, i.uv + o);
+                    if(abs(s.a) >= radius)
+                    {
+                        color += s.rgb;
+                        weight += 1;
+                    }
                 }
-                color *= 1.0 / kernelSampleCount;
+                color *= 1.0 / weight;
                 return half4(color, 1);
             }
             ENDCG

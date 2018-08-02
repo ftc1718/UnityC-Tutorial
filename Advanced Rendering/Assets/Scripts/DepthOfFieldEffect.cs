@@ -37,7 +37,7 @@ public class DepthOfFieldEffect : MonoBehaviour
         dofMaterial.SetFloat("_FocusDistance", focusDistance);
         dofMaterial.SetFloat("_FocusRange", focusRange);
         dofMaterial.SetFloat("_BokehRadius", bokehRadius);
-        dofMaterial.SetTexture("_CocTex", coc);
+        dofMaterial.SetTexture("_CoCTex", coc);
 
         int width = src.width / 2;
         int height = src.height / 2;

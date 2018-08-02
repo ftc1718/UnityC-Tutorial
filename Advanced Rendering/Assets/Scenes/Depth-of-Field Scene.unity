@@ -1285,6 +1285,7 @@ MonoBehaviour:
   dofShader: {fileID: 4800000, guid: eb0b2a34c42489f418449c3f33906783, type: 3}
   focusDistance: 10
   focusRange: 3
+  bokehRadius: 3.42
 --- !u!81 &1375905523
 AudioListener:
   m_ObjectHideFlags: 0
