@@ -14,6 +14,7 @@ public class DepthOfFieldEffect : MonoBehaviour
     const int preFilterPass = 1;
     const int bokehPass = 2;
     const int postFilterPass = 3;
+    const int combinePass = 4;
 
     [Range(0.1f, 100f)]
     public float focusDistance = 10f;
@@ -34,11 +35,6 @@ public class DepthOfFieldEffect : MonoBehaviour
             src.width, src.height, 0, RenderTextureFormat.RHalf, RenderTextureReadWrite.Linear
         );
 
-        dofMaterial.SetFloat("_FocusDistance", focusDistance);
-        dofMaterial.SetFloat("_FocusRange", focusRange);
-        dofMaterial.SetFloat("_BokehRadius", bokehRadius);
-        dofMaterial.SetTexture("_CoCTex", coc);
-
         int width = src.width / 2;
         int height = src.height / 2;
         RenderTextureFormat format = src.format;
@@ -47,11 +43,17 @@ public class DepthOfFieldEffect : MonoBehaviour
 		RenderTexture dof1 =
 			RenderTexture.GetTemporary(width, height, 0, format);
 
+        dofMaterial.SetFloat("_FocusDistance", focusDistance);
+        dofMaterial.SetFloat("_FocusRange", focusRange);
+        dofMaterial.SetFloat("_BokehRadius", bokehRadius);
+        dofMaterial.SetTexture("_CoCTex", coc);
+        dofMaterial.SetTexture("_DoFTex", dof0);
+
         Graphics.Blit(src, coc, dofMaterial, circleOfConfusionPass);
         Graphics.Blit(src, dof0);
         Graphics.Blit(dof0, dof1, dofMaterial, bokehPass);
         Graphics.Blit(dof1, dof0, dofMaterial, postFilterPass);
-        Graphics.Blit(dof0, dest);
+        Graphics.Blit(src, dest, dofMaterial, combinePass);
 
         RenderTexture.ReleaseTemporary(coc);
         RenderTexture.ReleaseTemporary(dof0);

@@ -8,7 +8,7 @@ Shader "Custom/DepthofFiled"
     CGINCLUDE
     #include "UnityCG.cginc"
 
-    sampler2D _MainTex, _CameraDepthTexture, _CoCTex;
+    sampler2D _MainTex, _CameraDepthTexture, _CoCTex, _DoFTex;
     float4 _MainTex_TexelSize;
 
     float _FocusDistance, _FocusRange;
@@ -140,6 +140,11 @@ Shader "Custom/DepthofFiled"
             };
             #endif
 
+            half Weight(half coc, half radius)
+            {
+                return saturate((coc - radius + 2) / 2);
+            }
+
             half4 FragmentProgram(Interpolators i) : SV_TARGET
             {
                 half3 color = 0;
@@ -150,11 +155,10 @@ Shader "Custom/DepthofFiled"
                     half radius = length(o);
                     o *= _MainTex_TexelSize.xy;
                     half4 s = tex2D(_MainTex, i.uv + o);
-                    if(abs(s.a) >= radius)
-                    {
-                        color += s.rgb;
-                        weight += 1;
-                    }
+                    
+                    half sw = Weight(abs(s.a), radius);
+                    color += s.rgb * sw;
+                    weight += sw;
                 }
                 color *= 1.0 / weight;
                 return half4(color, 1);
@@ -179,6 +183,26 @@ Shader "Custom/DepthofFiled"
                 return s * 0.25;
             }
             ENDCG
+		}
+
+        Pass //4 combinPass
+        {
+			CGPROGRAM
+				#pragma vertex VertexProgram
+				#pragma fragment FragmentProgram
+
+				half4 FragmentProgram (Interpolators i) : SV_Target
+                {
+					half4 source = tex2D(_MainTex, i.uv);
+
+                    half coc = tex2D(_CoCTex, i.uv).r;
+					half4 dof = tex2D(_DoFTex, i.uv);
+
+					half dofStrength = smoothstep(0.1, 1, abs(coc));
+					half3 color = lerp(source.rgb, dof.rgb, dofStrength);
+					return half4(color, source.a);
+				}
+			ENDCG
 		}
     }
 }
