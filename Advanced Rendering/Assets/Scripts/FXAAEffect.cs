@@ -4,10 +4,17 @@ using UnityEngine;
 [ExecuteInEditMode, ImageEffectAllowedInSceneView]
 public class FXAAEffect : MonoBehaviour
 {
+    [Range(0.0312f, 0.0833f)]
+	public float contrastThreshold = 0.0312f;
+    [Range(0.063f, 0.333f)]
+	public float relativeThreshold = 0.063f;
+    [Range(0f, 1f)]
+	public float subpixelBlending = 1f;
+
     const int luminancePass = 0;
     const int fxaaPass = 1;
 
-    [HideInInspector]
+    // [HideInInspector]
     public Shader fxaaShader;
 
     [NonSerialized]
@@ -23,6 +30,10 @@ public class FXAAEffect : MonoBehaviour
             fxaaMaterial = new Material(fxaaShader);
             fxaaMaterial.hideFlags = HideFlags.HideAndDontSave;
         }
+
+        fxaaMaterial.SetFloat("_ContrastThreshld", contrastThreshold);
+        fxaaMaterial.SetFloat("_RelativeThreshold", relativeThreshold);
+        fxaaMaterial.SetFloat("_SubpixelBlending", subpixelBlending);
 
         if(LuminanceSource == LuminanceMode.Calculate)
         {

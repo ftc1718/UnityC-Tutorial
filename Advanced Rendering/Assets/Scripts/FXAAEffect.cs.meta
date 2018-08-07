@@ -1,12 +1,12 @@
 fileFormatVersion: 2
 guid: 40f5f1bbff097324bbe6c9bf6cca5348
-timeCreated: 1533544026
+timeCreated: 1533622489
 licenseType: Free
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
   defaultReferences:
-  - fxaaShader: {fileID: 4800000, guid: 69192a5ce38b1634fa92fb2699a1f37f, type: 3}
+  - fxaaShader: {instanceID: 0}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 
