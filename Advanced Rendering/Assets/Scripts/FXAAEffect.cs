@@ -4,6 +4,8 @@ using UnityEngine;
 [ExecuteInEditMode, ImageEffectAllowedInSceneView]
 public class FXAAEffect : MonoBehaviour
 {
+    public bool lowQuality;
+    
     [Range(0.0312f, 0.0833f)]
 	public float contrastThreshold = 0.0312f;
     [Range(0.063f, 0.333f)]
@@ -34,6 +36,15 @@ public class FXAAEffect : MonoBehaviour
         fxaaMaterial.SetFloat("_ContrastThreshld", contrastThreshold);
         fxaaMaterial.SetFloat("_RelativeThreshold", relativeThreshold);
         fxaaMaterial.SetFloat("_SubpixelBlending", subpixelBlending);
+
+        if (lowQuality)
+        {
+			fxaaMaterial.EnableKeyword("LOW_QUALITY");
+		}
+		else
+        {
+			fxaaMaterial.DisableKeyword("LOW_QUALITY");
+		}
 
         if(LuminanceSource == LuminanceMode.Calculate)
         {
