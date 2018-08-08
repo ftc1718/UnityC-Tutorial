@@ -4,14 +4,15 @@ using UnityEngine;
 [ExecuteInEditMode, ImageEffectAllowedInSceneView]
 public class FXAAEffect : MonoBehaviour
 {
-    public bool lowQuality;
-    
     [Range(0.0312f, 0.0833f)]
 	public float contrastThreshold = 0.0312f;
     [Range(0.063f, 0.333f)]
 	public float relativeThreshold = 0.063f;
     [Range(0f, 1f)]
 	public float subpixelBlending = 1f;
+
+    public bool lowQuality;
+    public bool gammaBlending;
 
     const int luminancePass = 0;
     const int fxaaPass = 1;
@@ -45,6 +46,15 @@ public class FXAAEffect : MonoBehaviour
         {
 			fxaaMaterial.DisableKeyword("LOW_QUALITY");
 		}
+
+        if(gammaBlending)
+        {
+            fxaaMaterial.EnableKeyword("GAMMA_BLENDING");
+        }
+        else
+        {
+            fxaaMaterial.DisableKeyword("GAMMA_BLENDING");
+        }
 
         if(LuminanceSource == LuminanceMode.Calculate)
         {

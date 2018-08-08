@@ -273,10 +273,18 @@ Shader "Custom/FXAA"
             #pragma vertex VertexProgram
             #pragma fragment FragmentProgram
 
+            #pragma multi_compile _ GAMMA_BLENDING
+
 			half4 FragmentProgram(Interpolators i) : SV_TARGET
             {
                 half4 sample = tex2D(_MainTex, i.uv);
-                sample.a = LinearRgbToLuminance(saturate(sample.rgb));
+                sample.rgb = saturate(sample.rgb);
+                sample.a = LinearRgbToLuminance(sample.rgb);
+                // sample.a = LinearRgbToLuminance(saturate(sample.rgb));
+
+                #if defined(GAMMA_BLENDING)
+                    sample.rgb = LinearToGammaSpace(sample.rgb);
+                #endif
                 return sample;
             }
             ENDCG
@@ -290,10 +298,15 @@ Shader "Custom/FXAA"
 
             #pragma multi_compile _ LUMINANCE_GREEN
             #pragma multi_compile _ LOW_QUALITY
+            #pragma multi_compile _ GAMMA_BLENDING
 
 			half4 FragmentProgram(Interpolators i) : SV_TARGET
             {
-                return ApplyFXAA(i.uv);
+                float4 sample = ApplyFXAA(i.uv);
+                #if defined(GAMMA_BLENDING)
+                    sample.rgb = GammaToLinearSpace(sample.rgb);
+                #endif
+                return sample;
             }
             ENDCG
         }
