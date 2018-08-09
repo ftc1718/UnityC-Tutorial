@@ -125,6 +125,31 @@ Shader "Custom/TriplanarMapping"
 
 			ENDCG
 		}
+
+		Pass
+		{
+			Tags
+			{
+				"LightMode" = "Meta"
+			}
+
+			Cull Off
+
+			CGPROGRAM
+
+			#pragma vertex MyLightmappingVertexProgram
+			#pragma fragment MyLightmappingFragmentProgram
+
+			#pragma shader_feature _SEPARATE_TOP_MAPS
+
+			#define META_PASS_NEEDS_NORMALS
+			#define META_PASS_NEEDS_POSITION
+
+			#include "MyTriplanarMapping.cginc"
+			#include "MyLightmapping.cginc"
+
+			ENDCG
+		}
 	}
 	CustomEditor "MyTriplanarShaderGUI"
 }
