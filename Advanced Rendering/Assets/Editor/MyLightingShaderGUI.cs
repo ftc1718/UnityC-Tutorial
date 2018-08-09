@@ -2,15 +2,10 @@
 using UnityEngine.Rendering;
 using UnityEditor;
 
-public class MyLightingShaderGUI : ShaderGUI
+public class MyLightingShaderGUI : MyBaseShaderGUI
 {
-    Material target;
-    MaterialEditor editor;
-    MaterialProperty[] properties;
-
     bool shouldShowAlphaCutoff;
 
-    static GUIContent staticLabel = new GUIContent();
     static ColorPickerHDRConfig emissionConfig =
         new ColorPickerHDRConfig(0f, 99f, 1f / 99f, 3f);
 
@@ -72,9 +67,7 @@ public class MyLightingShaderGUI : ShaderGUI
 
     public override void OnGUI(MaterialEditor editor, MaterialProperty[] properties)
     {
-        this.target = editor.target as Material;
-        this.editor = editor;
-        this.properties = properties;
+        base.OnGUI(editor, properties);
         DoRenderingMode();
         if(target.HasProperty("_TessellationUniform"))
         {
@@ -87,54 +80,6 @@ public class MyLightingShaderGUI : ShaderGUI
         DoMain();
         DoSecondary();
         DoAdvanced();
-    }
-
-    void SetKeyword(string keyword, bool state)
-    {
-        if (state)
-        {
-            foreach (Material m in editor.targets)
-            {
-                m.EnableKeyword(keyword);
-            }
-        }
-        else
-        {
-            foreach (Material m in editor.targets)
-            {
-                m.DisableKeyword(keyword);
-            }
-        }
-    }
-
-    bool IsKeywordEnabled(string keyword)
-    {
-        return target.IsKeywordEnabled(keyword);
-    }
-
-    MaterialProperty FindProperty(string name)
-    {
-        return FindProperty(name, properties);
-    }
-
-    static GUIContent MakeLabel(string text, string tooltip = null)
-    {
-        staticLabel.text = text;
-        staticLabel.tooltip = tooltip;
-        return staticLabel;
-    }
-
-    static GUIContent MakeLabel(MaterialProperty properties, string tooltip = null)
-    {
-        staticLabel.text = properties.displayName;
-        staticLabel.tooltip = tooltip;
-        return staticLabel;
-    }
-
-    //Suppot for undo
-    void RecordAction(string label)
-    {
-        editor.RegisterPropertyChangeUndo(label);
     }
 
     void DoMain()

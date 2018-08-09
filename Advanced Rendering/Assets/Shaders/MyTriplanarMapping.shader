@@ -116,4 +116,5 @@ Shader "Custom/TriplanarMapping"
 			ENDCG
 		}
 	}
+	CustomEditor "MyTriplanarShaderGUI"
 }
