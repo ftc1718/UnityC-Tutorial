@@ -3,7 +3,11 @@ Shader "Custom/TriplanarMapping"
 
 	Properties
     {
-		_MainTex ("Albedo", 2D) = "white" {}
+		[NoScaleOffset] _MainTex ("Albedo", 2D) = "white" {}
+		[NoScaleOffset] _MOSMap ("MOS", 2D) = "white" {}
+		[NoScaleOffset] _NormalMap ("Normals", 2D) = "white" {}
+
+		_MapScale ("Map Scale", Float) = 1
 	}
 
 	SubShader

@@ -18,10 +18,12 @@ struct TriplanarUV
     float2 x, y, z;
 };
 
+float _MapScale;
+
 TriplanarUV GetTriplanarUV(SurfaceParameters parameters)
 {
     TriplanarUV triUV;
-    float3 p = parameters.position;
+    float3 p = parameters.position * _MapScale;
     triUV.x = p.zy;
     triUV.y = p.xz;
     triUV.z = p.xy;
@@ -33,7 +35,7 @@ TriplanarUV GetTriplanarUV(SurfaceParameters parameters)
     {
         triUV.y.x = -triUV.y.x;
     }
-    if(parameters.normal.z > 0)
+    if(parameters.normal.z >= 0)
     {
         triUV.z.x = -triUV.z.x;
     }
