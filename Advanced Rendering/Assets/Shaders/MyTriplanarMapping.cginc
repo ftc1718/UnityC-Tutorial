@@ -5,7 +5,42 @@
 
 #include "MyLightingInput.cginc"
 
-sampler2D _MOSMap;
+sampler2D _MOHSMap;
+float _MapScale;
+float _BlendOffset, _BlendExponent, _BlendHeightStrength;
+
+TriplanarUV GetTriplanarUV(SurfaceParameters parameters)
+{
+    TriplanarUV triUV;
+    float3 p = parameters.position * _MapScale;
+    triUV.x = p.zy;
+    triUV.y = p.xz;
+    triUV.z = p.xy;
+    if(parameters.normal.x < 0)
+    {
+        triUV.x.x = -triUV.x.x;
+    }
+    if(parameters.normal.y < 0)
+    {
+        triUV.y.x = -triUV.y.x;
+    }
+    if(parameters.normal.z >= 0)
+    {
+        triUV.z.x = -triUV.z.x;
+    }
+    return triUV;
+}
+
+float3 GetTriplanarWeight(
+	SurfaceParameters parameters, float heightX, float heightY, float heightZ
+	)
+{
+    float3 triW = abs(parameters.normal);
+	triW = saturate(triW - _BlendOffset);
+	triW *= lerp(1, float3(heightX, heightY, heightZ), _BlendHeightStrength);
+	triW = pow(triW, _BlendExponent);
+    return triW / (triW.x + triW.y + triW.z);
+}
 
 float3 BlendTriplanarNormal (float3 mappedNormal, float3 surfaceNormal)
 {
@@ -25,9 +60,9 @@ void MyTriPlanarSurfaceFunction (
 	float3 albedoY = tex2D(_MainTex, triUV.y).rgb;
 	float3 albedoZ = tex2D(_MainTex, triUV.z).rgb;
 
-	float4 mosX = tex2D(_MOSMap, triUV.x);
-	float4 mosY = tex2D(_MOSMap, triUV.y);
-	float4 mosZ = tex2D(_MOSMap, triUV.z);
+	float4 mohsX = tex2D(_MOHSMap, triUV.x);
+	float4 mohsY = tex2D(_MOHSMap, triUV.y);
+	float4 mohsZ = tex2D(_MOHSMap, triUV.z);
 
 	float3 tangentNormalX = UnpackNormal(tex2D(_NormalMap, triUV.x));
 	float3 tangentNormalY = UnpackNormal(tex2D(_NormalMap, triUV.y));
@@ -50,16 +85,16 @@ void MyTriPlanarSurfaceFunction (
 	float3 worldNormalY = BlendTriplanarNormal(tangentNormalY, parameters.normal.xzy).xzy;
 	float3 worldNormalZ = BlendTriplanarNormal(tangentNormalZ, parameters.normal);
 
-	float3 triW = GetTriplanarWeight(parameters);
+	float3 triW = GetTriplanarWeight(parameters, mohsX.z, mohsY.z, mohsZ.z);
 
 	surface.normal = normalize(
 		worldNormalX * triW.x + worldNormalY * triW.y + worldNormalZ * triW.z
 	);
 	surface.albedo = albedoX * triW.x + albedoY * triW.y + albedoZ * triW.z;
-	float4 mos = mosX * triW.x + mosY * triW.y + mosZ * triW.z;
-	surface.metallic = mos.x;
-	surface.occlusion = mos.y;
-	surface.smoothness = mos.a;
+	float4 mohs = mohsX * triW.x + mohsY * triW.y + mohsZ * triW.z;
+	surface.metallic = mohs.x;
+	surface.occlusion = mohs.y;
+	surface.smoothness = mohs.a;
 }
 
 #define SURFACE_FUNCTION MyTriPlanarSurfaceFunction
