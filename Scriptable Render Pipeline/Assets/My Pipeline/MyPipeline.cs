@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Experimental.Rendering;
+using Conditional = System.Diagnostics.ConditionalAttribute;
 
 public class MyPipeline : RenderPipeline
 {
@@ -9,6 +10,8 @@ public class MyPipeline : RenderPipeline
     {
         name = "Render Camera"
     };
+
+    Material errorMaterial;
 
     public override void Render(ScriptableRenderContext renderContext, Camera[] cameras)
 	{
@@ -25,6 +28,14 @@ public class MyPipeline : RenderPipeline
 		{
             return;
         }
+        
+#if UNITY_EDITOR
+        if (camera.cameraType == CameraType.SceneView)
+        {
+            ScriptableRenderContext.EmitWorldGeometryForSceneView(camera);
+        }
+#endif
+
         CullResults.Cull(ref cullingParameters, context, ref cull);
         context.SetupCameraProperties(camera);
 
@@ -38,25 +49,52 @@ public class MyPipeline : RenderPipeline
         context.ExecuteCommandBuffer(cameraBuffer);
         cameraBuffer.Clear();
 
-        var drawSetting = new DrawRendererSettings(camera, new ShaderPassName("SRPDefaultUnlit"));
-        drawSetting.sorting.flags = SortFlags.CommonOpaque;
+        var drawSettings = new DrawRendererSettings(camera, new ShaderPassName("SRPDefaultUnlit"));
+        drawSettings.sorting.flags = SortFlags.CommonOpaque;
 
-        var filterSetting = new FilterRenderersSettings(true)
+        var filterSettings = new FilterRenderersSettings(true)
         {
             renderQueueRange = RenderQueueRange.opaque
 		};
-        context.DrawRenderers(cull.visibleRenderers, ref drawSetting, filterSetting);
+        context.DrawRenderers(cull.visibleRenderers, ref drawSettings, filterSettings);
 
         context.DrawSkybox(camera);
 
-        drawSetting.sorting.flags = SortFlags.CommonTransparent;
-        filterSetting.renderQueueRange = RenderQueueRange.transparent;
-        context.DrawRenderers(cull.visibleRenderers, ref drawSetting, filterSetting);
+        drawSettings.sorting.flags = SortFlags.CommonTransparent;
+        filterSettings.renderQueueRange = RenderQueueRange.transparent;
+        context.DrawRenderers(cull.visibleRenderers, ref drawSettings, filterSettings);
+
+        DrawDefaultPipeline(context, camera);
 
         cameraBuffer.EndSample("Render Camera");
         context.ExecuteCommandBuffer(cameraBuffer);
         cameraBuffer.Clear();
 
         context.Submit();
+    }
+
+    [Conditional("DEVELOPMENT_BUILD"), Conditional("UNITY_EDITOR")]
+    void DrawDefaultPipeline(ScriptableRenderContext context, Camera camera)
+    {
+        if(errorMaterial == null)
+        {
+            Shader errorShader = Shader.Find("Hidden/InternalErrorShader");
+            errorMaterial = new Material(errorShader)
+            {
+                hideFlags = HideFlags.HideAndDontSave
+            };
+        }
+
+        var drawSettings = new DrawRendererSettings(camera, new ShaderPassName("ForwardBase"));
+        drawSettings.SetShaderPassName(1, new ShaderPassName("PrepassBase"));
+		drawSettings.SetShaderPassName(2, new ShaderPassName("Always"));
+		drawSettings.SetShaderPassName(3, new ShaderPassName("Vertex"));
+		drawSettings.SetShaderPassName(4, new ShaderPassName("VertexLMRGBM"));
+		drawSettings.SetShaderPassName(5, new ShaderPassName("VertexLM"));
+        drawSettings.SetOverrideMaterial(errorMaterial, 0);
+
+        var filterSettings = new FilterRenderersSettings(true);
+
+        context.DrawRenderers(cull.visibleRenderers, ref drawSettings, filterSettings);
     }
 }
