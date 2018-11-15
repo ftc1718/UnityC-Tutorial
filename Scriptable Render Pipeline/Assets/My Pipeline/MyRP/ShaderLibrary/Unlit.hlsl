@@ -11,27 +11,40 @@ CBUFFER_START(UnityPerFrame)
     float4x4 unity_MatrixVP;
 CBUFFER_END
 
+#define UNITY_MATRIX_M unity_ObjectToWorld
+#include "CoreRP/ShaderLibrary/UnityInstancing.hlsl"
+
+UNITY_INSTANCING_BUFFER_START(PerInstance)
+	UNITY_DEFINE_INSTANCED_PROP(float4, _Color)
+UNITY_INSTANCING_BUFFER_END(PerInstance)
+
+
 struct VertexInput
 {
     float4 pos : POSITION;
+    UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
 struct VertexOutput
 {
     float4 clipPos : SV_POSITION;
+    UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
 VertexOutput UnlitPassVertex(VertexInput input)
 {
     VertexOutput output;
-    float4 worldPos = mul(unity_ObjectToWorld, float4(input.pos.xyz, 1.0));
+    UNITY_SETUP_INSTANCE_ID(input);
+    UNITY_TRANSFER_INSTANCE_ID(input, output);
+    float4 worldPos = mul(UNITY_MATRIX_M, float4(input.pos.xyz, 1.0));
     output.clipPos = mul(unity_MatrixVP, worldPos);
     return output;
 }
 
 float4 UnlitPassFragment(VertexOutput input) : SV_TARGET
 {
-    return 1;
+    UNITY_SETUP_INSTANCE_ID(input);
+    return UNITY_ACCESS_INSTANCED_PROP(PerInstance, _Color);
 }
 
 #endif //MYRP_UNLIT_INCLUDED
