@@ -15,6 +15,13 @@ public class MyPipeline : RenderPipeline
 
     DrawRendererFlags drawFlags;
 
+    const int maxVisibleLights = 4;
+    static int visibleLightColorID = Shader.PropertyToID("_VisibleLightColors");
+    static int visibleLightDirectionID = Shader.PropertyToID("_VisibleLightDirections");
+
+    Vector4[] visibleLightColors = new Vector4[maxVisibleLights];
+    Vector4[] visibleLightDirections = new Vector4[maxVisibleLights];
+
     public MyPipeline(bool dynamicBatching, bool instancing)
     {
         if(dynamicBatching)
@@ -59,7 +66,12 @@ public class MyPipeline : RenderPipeline
 			(clearFlags & CameraClearFlags.Color) != 0,
 			camera.backgroundColor
 			);
+
+        ConfigureLights();
+
         cameraBuffer.BeginSample("Render Camera");
+        cameraBuffer.SetGlobalVectorArray(visibleLightColorID, visibleLightColors);
+        cameraBuffer.SetGlobalVectorArray(visibleLightDirectionID, visibleLightDirections);
         context.ExecuteCommandBuffer(cameraBuffer);
         cameraBuffer.Clear();
 
@@ -86,6 +98,27 @@ public class MyPipeline : RenderPipeline
         cameraBuffer.Clear();
 
         context.Submit();
+    }
+
+    void ConfigureLights()
+    {
+        int i = 0;
+        for (;i < cull.visibleLights.Count; i++)
+        {
+            if(i == maxVisibleLights)
+                break;
+            VisibleLight light = cull.visibleLights[i];
+            visibleLightColors[i] = light.finalColor;
+            Vector4 v = light.localToWorld.GetColumn(2);
+			v.x = -v.x;
+			v.y = -v.y;
+			v.z = -v.z;
+			visibleLightDirections[i] = v;
+        }
+        for (; i < maxVisibleLights; i++)
+        {
+            visibleLightColors[i] = Color.clear;
+        }
     }
 
     [Conditional("DEVELOPMENT_BUILD"), Conditional("UNITY_EDITOR")]
