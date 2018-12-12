@@ -11,7 +11,8 @@ CBUFFER_END
 
 CBUFFER_START(_LightBuffer)
     float4 _VisibleLightColors[MAX_VISIBLE_LIGHTS];
-    float4 _VisibleLightDirections[MAX_VISIBLE_LIGHTS];
+    float4 _VisibleLightDirectionsOrPositions[MAX_VISIBLE_LIGHTS];
+    float4 _VisibleLightAttenuations[MAX_VISIBLE_LIGHTS];
 CBUFFER_END
 
 CBUFFER_START(UnityPerFrame)
@@ -25,12 +26,24 @@ UNITY_INSTANCING_BUFFER_START(PerInstance)
 	UNITY_DEFINE_INSTANCED_PROP(float4, _Color)
 UNITY_INSTANCING_BUFFER_END(PerInstance)
 
-float3 DiffuseLight(int index, float3 normal)
+float3 DiffuseLight(int index, float3 normal, float3 worldPos)
 {
     float3 lightColor = _VisibleLightColors[index].rgb;
-    float3 lightDirection = _VisibleLightDirections[index].xyz;
+    float4 lightDirectionOrPosition = _VisibleLightDirectionsOrPositions[index];
+    float4 lightAttenuation = _VisibleLightAttenuations[index];
+
+    float3 lightVector = lightDirectionOrPosition.xyz - worldPos * lightDirectionOrPosition.w;
+    float3 lightDirection = normalize(lightVector);
 
     float diffuse = saturate(dot(lightDirection, normal));
+
+    float rangeFade = dot(lightVector, lightVector) * lightAttenuation.x;
+    rangeFade = saturate(1 - rangeFade * rangeFade);
+    // rangeFade = 1 - rangeFade * rangeFade;
+    rangeFade *= rangeFade;
+
+    float distanceSqr = max(dot(lightVector, lightVector), 0.00001);
+    diffuse *= rangeFade / distanceSqr;
     return diffuse * lightColor;
 }
 
@@ -46,6 +59,7 @@ struct VertexOutput
 {
     float4 clipPos : SV_POSITION;
     float3 normal : TEXCOORD0;
+    float3 worldPos : TEXCOORD1;
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
@@ -57,6 +71,7 @@ VertexOutput LitPassVertex(VertexInput input)
     float4 worldPos = mul(UNITY_MATRIX_M, float4(input.pos.xyz, 1.0));
     output.clipPos = mul(unity_MatrixVP, worldPos);
     output.normal = mul((float3x3)UNITY_MATRIX_M, input.normal);
+    output.worldPos = worldPos.xyz;
     return output;
 }
 
@@ -70,7 +85,7 @@ float4 LitPassFragment(VertexOutput input) : SV_TARGET
     float3 diffuseLight = 0;
     for(int i = 0; i < MAX_VISIBLE_LIGHTS; i++)
     {
-        diffuseLight += DiffuseLight(i, input.normal);
+        diffuseLight += DiffuseLight(i, input.normal, input.worldPos);
     }
     float3 color = diffuseLight * albedo;
     return float4(color, 1);

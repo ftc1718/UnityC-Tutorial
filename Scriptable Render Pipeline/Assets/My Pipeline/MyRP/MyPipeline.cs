@@ -17,10 +17,12 @@ public class MyPipeline : RenderPipeline
 
     const int maxVisibleLights = 4;
     static int visibleLightColorID = Shader.PropertyToID("_VisibleLightColors");
-    static int visibleLightDirectionID = Shader.PropertyToID("_VisibleLightDirections");
+    static int visibleLightDirectionOrPositionID = Shader.PropertyToID("_VisibleLightDirectionsOrPositions");
+    static int visibleLightAttenuationsId = Shader.PropertyToID("_VisibleLightAttenuations");
 
     Vector4[] visibleLightColors = new Vector4[maxVisibleLights];
-    Vector4[] visibleLightDirections = new Vector4[maxVisibleLights];
+    Vector4[] visibleLightDirectionsOrPositions = new Vector4[maxVisibleLights];
+    Vector4[] visibleLightAttenuations = new Vector4[maxVisibleLights];
 
     public MyPipeline(bool dynamicBatching, bool instancing)
     {
@@ -49,7 +51,7 @@ public class MyPipeline : RenderPipeline
 		{
             return;
         }
-        
+
 #if UNITY_EDITOR
         if (camera.cameraType == CameraType.SceneView)
         {
@@ -71,7 +73,8 @@ public class MyPipeline : RenderPipeline
 
         cameraBuffer.BeginSample("Render Camera");
         cameraBuffer.SetGlobalVectorArray(visibleLightColorID, visibleLightColors);
-        cameraBuffer.SetGlobalVectorArray(visibleLightDirectionID, visibleLightDirections);
+        cameraBuffer.SetGlobalVectorArray(visibleLightDirectionOrPositionID, visibleLightDirectionsOrPositions);
+        cameraBuffer.SetGlobalVectorArray(visibleLightAttenuationsId, visibleLightAttenuations);
         context.ExecuteCommandBuffer(cameraBuffer);
         cameraBuffer.Clear();
 
@@ -109,11 +112,22 @@ public class MyPipeline : RenderPipeline
                 break;
             VisibleLight light = cull.visibleLights[i];
             visibleLightColors[i] = light.finalColor;
-            Vector4 v = light.localToWorld.GetColumn(2);
-			v.x = -v.x;
-			v.y = -v.y;
-			v.z = -v.z;
-			visibleLightDirections[i] = v;
+            Vector4 attenuation = Vector4.zero;
+
+            if (light.lightType == LightType.Directional)
+            {
+                Vector4 v = light.localToWorld.GetColumn(2);
+                v.x = -v.x;
+                v.y = -v.y;
+                v.z = -v.z;
+                visibleLightDirectionsOrPositions[i] = v;
+            }
+            else
+            {
+                visibleLightDirectionsOrPositions[i] = light.localToWorld.GetColumn(3);
+                attenuation.x = 1f / Mathf.Max(light.range * light.range, 0.00001f);
+            }
+            visibleLightAttenuations[i] = attenuation;
         }
         for (; i < maxVisibleLights; i++)
         {
