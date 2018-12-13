@@ -19,10 +19,12 @@ public class MyPipeline : RenderPipeline
     static int visibleLightColorID = Shader.PropertyToID("_VisibleLightColors");
     static int visibleLightDirectionOrPositionID = Shader.PropertyToID("_VisibleLightDirectionsOrPositions");
     static int visibleLightAttenuationsId = Shader.PropertyToID("_VisibleLightAttenuations");
+    static int visibleLightSpotDirectionID = Shader.PropertyToID("_VisibleLightSpotDirections");
 
     Vector4[] visibleLightColors = new Vector4[maxVisibleLights];
     Vector4[] visibleLightDirectionsOrPositions = new Vector4[maxVisibleLights];
     Vector4[] visibleLightAttenuations = new Vector4[maxVisibleLights];
+    Vector4[] visibleLightSpotDirections = new Vector4[maxVisibleLights];
 
     public MyPipeline(bool dynamicBatching, bool instancing)
     {
@@ -75,6 +77,7 @@ public class MyPipeline : RenderPipeline
         cameraBuffer.SetGlobalVectorArray(visibleLightColorID, visibleLightColors);
         cameraBuffer.SetGlobalVectorArray(visibleLightDirectionOrPositionID, visibleLightDirectionsOrPositions);
         cameraBuffer.SetGlobalVectorArray(visibleLightAttenuationsId, visibleLightAttenuations);
+        cameraBuffer.SetGlobalVectorArray(visibleLightSpotDirectionID, visibleLightSpotDirections);
         context.ExecuteCommandBuffer(cameraBuffer);
         cameraBuffer.Clear();
 
@@ -113,6 +116,7 @@ public class MyPipeline : RenderPipeline
             VisibleLight light = cull.visibleLights[i];
             visibleLightColors[i] = light.finalColor;
             Vector4 attenuation = Vector4.zero;
+            attenuation.w = 1f;
 
             if (light.lightType == LightType.Directional)
             {
@@ -126,6 +130,23 @@ public class MyPipeline : RenderPipeline
             {
                 visibleLightDirectionsOrPositions[i] = light.localToWorld.GetColumn(3);
                 attenuation.x = 1f / Mathf.Max(light.range * light.range, 0.00001f);
+
+                if(light.lightType == LightType.Spot)
+                {
+                    Vector4 v = light.localToWorld.GetColumn(2);
+                    v.x = -v.x;
+                    v.y = -v.y;
+                    v.z = -v.z;
+                    visibleLightSpotDirections[i] = v;
+
+                    float outerAngle = Mathf.Deg2Rad * light.spotAngle;
+                    float outerCos = Mathf.Cos(outerAngle * 0.5f);
+                    float innerAngle = 2.0f * Mathf.Atan(Mathf.Tan(outerAngle) * (64.0f - 18.0f) / 64.0f);
+                    float innerCos = Mathf.Cos(innerAngle * 0.5f);
+                    float angleRange = Mathf.Max(0.001f, innerCos - outerCos);
+                    attenuation.z = 1.0f / angleRange;
+                    attenuation.w = -outerCos * attenuation.z;
+                }
             }
             visibleLightAttenuations[i] = attenuation;
         }

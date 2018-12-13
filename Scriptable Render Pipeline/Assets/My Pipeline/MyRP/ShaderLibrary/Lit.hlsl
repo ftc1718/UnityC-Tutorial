@@ -13,6 +13,7 @@ CBUFFER_START(_LightBuffer)
     float4 _VisibleLightColors[MAX_VISIBLE_LIGHTS];
     float4 _VisibleLightDirectionsOrPositions[MAX_VISIBLE_LIGHTS];
     float4 _VisibleLightAttenuations[MAX_VISIBLE_LIGHTS];
+    float4 _VisibleLightSpotDirections[MAX_VISIBLE_LIGHTS];
 CBUFFER_END
 
 CBUFFER_START(UnityPerFrame)
@@ -31,6 +32,7 @@ float3 DiffuseLight(int index, float3 normal, float3 worldPos)
     float3 lightColor = _VisibleLightColors[index].rgb;
     float4 lightDirectionOrPosition = _VisibleLightDirectionsOrPositions[index];
     float4 lightAttenuation = _VisibleLightAttenuations[index];
+    float3 spotDirection = _VisibleLightSpotDirections[index].xyz;
 
     float3 lightVector = lightDirectionOrPosition.xyz - worldPos * lightDirectionOrPosition.w;
     float3 lightDirection = normalize(lightVector);
@@ -39,11 +41,14 @@ float3 DiffuseLight(int index, float3 normal, float3 worldPos)
 
     float rangeFade = dot(lightVector, lightVector) * lightAttenuation.x;
     rangeFade = saturate(1 - rangeFade * rangeFade);
-    // rangeFade = 1 - rangeFade * rangeFade;
     rangeFade *= rangeFade;
 
+    float spotFade = dot(spotDirection, lightDirection);
+	spotFade = saturate(spotFade * lightAttenuation.z + lightAttenuation.w);
+	spotFade *= spotFade;
+
     float distanceSqr = max(dot(lightVector, lightVector), 0.00001);
-    diffuse *= rangeFade / distanceSqr;
+    diffuse *= spotFade * rangeFade / distanceSqr;
     return diffuse * lightColor;
 }
 
@@ -87,6 +92,7 @@ float4 LitPassFragment(VertexOutput input) : SV_TARGET
     {
         diffuseLight += DiffuseLight(i, input.normal, input.worldPos);
     }
+    // diffuseLight = saturate(dot(input.normal, float3(0, 1,0)));
     float3 color = diffuseLight * albedo;
     return float4(color, 1);
 }
