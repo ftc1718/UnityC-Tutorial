@@ -7,6 +7,7 @@ public class MyPipeline : RenderPipeline
 {
     RenderTexture shadowMap;
     CullResults cull;
+    int shadowMapSize;
 
     CommandBuffer cameraBuffer = new CommandBuffer
     {
@@ -23,6 +24,8 @@ public class MyPipeline : RenderPipeline
     DrawRendererFlags drawFlags;
 
     const int maxVisibleLights = 16;
+
+    const string shadowsSoftKeyword = "_SHADOWS_SOFT";
     static int visibleLightColorID = Shader.PropertyToID("_VisibleLightColors");
     static int visibleLightDirectionOrPositionID = Shader.PropertyToID("_VisibleLightDirectionsOrPositions");
     static int visibleLightAttenuationsID = Shader.PropertyToID("_VisibleLightAttenuations");
@@ -30,13 +33,16 @@ public class MyPipeline : RenderPipeline
 
     static int shadowMapID = Shader.PropertyToID("_ShadowMap");
     static int worldToShadowMatrixID = Shader.PropertyToID("_WorldToShadowMatrix");
+    static int shadowBiasID = Shader.PropertyToID("_ShadowBias");
+    static int shadowStrengthID = Shader.PropertyToID("_ShadowStrength");
+    static int shadowMapSizeID = Shader.PropertyToID("_ShadowMapSize");
 
     Vector4[] visibleLightColors = new Vector4[maxVisibleLights];
     Vector4[] visibleLightDirectionsOrPositions = new Vector4[maxVisibleLights];
     Vector4[] visibleLightAttenuations = new Vector4[maxVisibleLights];
     Vector4[] visibleLightSpotDirections = new Vector4[maxVisibleLights];
 
-    public MyPipeline(bool dynamicBatching, bool instancing)
+    public MyPipeline(bool dynamicBatching, bool instancing, int shadowMapSize)
     {
         if (dynamicBatching)
         {
@@ -46,11 +52,12 @@ public class MyPipeline : RenderPipeline
         {
             drawFlags |= DrawRendererFlags.EnableInstancing;
         }
+        this.shadowMapSize = shadowMapSize;
     }
 
     void RenderShadows(ScriptableRenderContext context)
     {
-        shadowMap = RenderTexture.GetTemporary(512, 512, 16, RenderTextureFormat.Shadowmap);
+        shadowMap = RenderTexture.GetTemporary(shadowMapSize, shadowMapSize, 16, RenderTextureFormat.Shadowmap);
         shadowMap.filterMode = FilterMode.Bilinear;
         shadowMap.wrapMode = TextureWrapMode.Clamp;
 
@@ -63,6 +70,11 @@ public class MyPipeline : RenderPipeline
         ShadowSplitData splitData;
         cull.ComputeSpotShadowMatricesAndCullingPrimitives(0, out viewMatrix, out projectionMatrix, out splitData);
         shadowBuffer.SetViewProjectionMatrices(viewMatrix, projectionMatrix);
+        shadowBuffer.SetGlobalFloat(shadowBiasID, cull.visibleLights[0].light.shadowBias);
+        shadowBuffer.SetGlobalFloat(shadowStrengthID, cull.visibleLights[0].light.shadowStrength);
+        float invShadowMapSize = 1f / shadowMapSize;
+        shadowBuffer.SetGlobalVector(shadowMapSizeID, new Vector4(
+                invShadowMapSize, invShadowMapSize, shadowMapSize, shadowMapSize));
         context.ExecuteCommandBuffer(shadowBuffer);
         shadowBuffer.Clear();
 
@@ -86,6 +98,15 @@ public class MyPipeline : RenderPipeline
         Matrix4x4 worldToShadowMatrix = scaleOffset * (projectionMatrix * viewMatrix);
         shadowBuffer.SetGlobalMatrix(worldToShadowMatrixID, worldToShadowMatrix);
         shadowBuffer.SetGlobalTexture(shadowMapID, shadowMap);
+        //if (cull.visibleLights[0].light.shadows == LightShadows.Soft)
+        //{
+        //    shadowBuffer.EnableShaderKeyword(shadowsSoftKeyword);
+        //}
+        //else
+        //{
+        //    shadowBuffer.DisableShaderKeyword(shadowsSoftKeyword);
+        //}
+        CoreUtils.SetKeyword(shadowBuffer, shadowsSoftKeyword, cull.visibleLights[0].light.shadows == LightShadows.Soft);
         shadowBuffer.EndSample("Render Shadows");
         context.ExecuteCommandBuffer(shadowBuffer);
         shadowBuffer.Clear();
