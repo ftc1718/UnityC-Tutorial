@@ -18,6 +18,10 @@ CBUFFER_START(_LightBuffer)
     float4 _VisibleLightSpotDirections[MAX_VISIBLE_LIGHTS];
 CBUFFER_END
 
+CBUFFER_START(_ShadowBuffer)
+	float4x4 _WorldToShadowMatrix;
+CBUFFER_END
+
 CBUFFER_START(UnityPerFrame)
     float4x4 unity_MatrixVP;
 CBUFFER_END
@@ -29,7 +33,10 @@ UNITY_INSTANCING_BUFFER_START(PerInstance)
 	UNITY_DEFINE_INSTANCED_PROP(float4, _Color)
 UNITY_INSTANCING_BUFFER_END(PerInstance)
 
-float3 DiffuseLight(int index, float3 normal, float3 worldPos)
+TEXTURE2D_SHADOW(_ShadowMap);
+SAMPLER_CMP(sampler_ShadowMap);
+
+float3 DiffuseLight(int index, float3 normal, float3 worldPos, float shadowAttenuation)
 {
     float3 lightColor = _VisibleLightColors[index].rgb;
     float4 lightDirectionOrPosition = _VisibleLightDirectionsOrPositions[index];
@@ -50,8 +57,15 @@ float3 DiffuseLight(int index, float3 normal, float3 worldPos)
 	spotFade *= spotFade;
 
     float distanceSqr = max(dot(lightVector, lightVector), 0.00001);
-    diffuse *= spotFade * rangeFade / distanceSqr;
+    diffuse *= shadowAttenuation * spotFade * rangeFade / distanceSqr;
     return diffuse * lightColor;
+}
+
+float ShadowAttenuation(float3 worldPos)
+{
+	float4 shadowPos = mul(_WorldToShadowMatrix, float4(worldPos, 1.0));
+	shadowPos.xyz /= shadowPos.w;
+	return SAMPLE_TEXTURE2D_SHADOW(_ShadowMap, sampler_ShadowMap, shadowPos.xyz);
 }
 
 
@@ -85,7 +99,7 @@ VertexOutput LitPassVertex(VertexInput input)
     for (int i = 4; i < min(unity_LightIndicesOffsetAndCount.y, 8); i++)
     {
 		int lightIndex = unity_4LightIndices1[i - 4];
-		output.vertexLighting += DiffuseLight(lightIndex, output.normal, output.worldPos);
+		output.vertexLighting += DiffuseLight(lightIndex, output.normal, output.worldPos, 1);
 	}
 
     return output;
@@ -102,7 +116,8 @@ float4 LitPassFragment(VertexOutput input) : SV_TARGET
     for(int i = 0; i < min(unity_LightIndicesOffsetAndCount.y, 4); i++)
     {
         int lightIndex = unity_4LightIndices0[i];
-        diffuseLight += DiffuseLight(lightIndex, input.normal, input.worldPos);
+		float shadowAttenuation = ShadowAttenuation(input.worldPos);
+        diffuseLight += DiffuseLight(lightIndex, input.normal, input.worldPos, shadowAttenuation);
     }
     // diffuseLight = saturate(dot(input.normal, float3(0, 1,0)));
     float3 color = diffuseLight * albedo;
