@@ -9,6 +9,7 @@ public class MyPipeline : RenderPipeline
     CullResults cull;
     int shadowMapSize;
     int shadowTileCount;
+    float shadowDistance;
 
     CommandBuffer cameraBuffer = new CommandBuffer
     {
@@ -47,7 +48,7 @@ public class MyPipeline : RenderPipeline
     Vector4[] shadowData = new Vector4[maxVisibleLights];
     Matrix4x4[] worldToShadowMatrices = new Matrix4x4[maxVisibleLights];
 
-    public MyPipeline(bool dynamicBatching, bool instancing, int shadowMapSize)
+    public MyPipeline(bool dynamicBatching, bool instancing, int shadowMapSize, float shadowDistance)
     {
         if (dynamicBatching)
         {
@@ -58,6 +59,7 @@ public class MyPipeline : RenderPipeline
             drawFlags |= DrawRendererFlags.EnableInstancing;
         }
         this.shadowMapSize = shadowMapSize;
+        this.shadowDistance = shadowDistance;
     }
 
     void RenderShadows(ScriptableRenderContext context)
@@ -109,7 +111,18 @@ public class MyPipeline : RenderPipeline
 
             Matrix4x4 viewMatrix, projectionMatrix;
             ShadowSplitData splitData;
-            if(!cull.ComputeSpotShadowMatricesAndCullingPrimitives(i, out viewMatrix, out projectionMatrix, out splitData))
+            bool validShadow;
+
+            if(shadowData[i].z > 0f)
+            {
+                validShadow = cull.ComputeDirectionalShadowMatricesAndCullingPrimitives(i, 0, 1, Vector3.right, (int)tileSize, cull.visibleLights[i].light.shadowNearPlane,
+                    out viewMatrix, out projectionMatrix, out splitData);
+            }
+            else
+            {
+                validShadow = cull.ComputeSpotShadowMatricesAndCullingPrimitives(i, out viewMatrix, out projectionMatrix, out splitData);
+            }
+            if(!validShadow)
             {
                 shadowData[i].x = 0f;
                 continue;
@@ -147,6 +160,7 @@ public class MyPipeline : RenderPipeline
             shadowBuffer.Clear();
 
             DrawShadowsSettings shadowSettings = new DrawShadowsSettings(cull, i);
+            shadowSettings.splitData.cullingSphere = splitData.cullingSphere; // spot light does not use cullingSphere
             context.DrawShadows(ref shadowSettings);
 
             if (SystemInfo.usesReversedZBuffer)
@@ -212,6 +226,8 @@ public class MyPipeline : RenderPipeline
         {
             return;
         }
+
+        cullingParameters.shadowDistance = Mathf.Min(shadowDistance, camera.farClipPlane);
 
 #if UNITY_EDITOR
         if (camera.cameraType == CameraType.SceneView)
@@ -297,6 +313,20 @@ public class MyPipeline : RenderPipeline
         }
     }
 
+    Vector4 ConfigureShadows(int lightIndex, Light shadowLight)
+    {
+        Vector4 shadow = Vector4.zero;
+        Bounds shadowBounds;
+        if (shadowLight.shadows != LightShadows.None &&
+            cull.GetShadowCasterBounds(lightIndex, out shadowBounds))
+        {
+            shadowTileCount += 1;
+            shadow.x = shadowLight.shadowStrength;
+            shadow.y = shadowLight.shadows == LightShadows.Soft ? 1 : 0;
+        }
+        return shadow;
+    }
+
     void ConfigureLights()
     {
         shadowTileCount = 0;
@@ -317,6 +347,8 @@ public class MyPipeline : RenderPipeline
                 v.y = -v.y;
                 v.z = -v.z;
                 visibleLightDirectionsOrPositions[i] = v;
+                shadow = ConfigureShadows(i, light.light);
+                shadow.z = 1f;
             }
             else
             {
@@ -340,14 +372,7 @@ public class MyPipeline : RenderPipeline
                     attenuation.w = -outerCos * attenuation.z;
 
                     Light shadowLight = light.light;
-                    Bounds shadowBounds;
-                    if(shadowLight.shadows != LightShadows.None && 
-                        cull.GetShadowCasterBounds(i, out shadowBounds))
-                    {
-                        shadowTileCount += 1;
-                        shadow.x = shadowLight.shadowStrength;
-                        shadow.y = shadowLight.shadows == LightShadows.Soft ? 1 : 0;
-                    }
+                    shadow = ConfigureShadows(i, shadowLight);
                 }
             }
             visibleLightAttenuations[i] = attenuation;

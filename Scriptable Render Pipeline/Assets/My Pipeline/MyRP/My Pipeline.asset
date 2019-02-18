@@ -11,6 +11,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cac1d181552648045bf230d928182a73, type: 3}
   m_Name: My Pipeline
   m_EditorClassIdentifier: 
-  shadowMapSize: 1024
+  shadowMapSize: 4096
+  shadowDistance: 10
   dynamicBatching: 1
   instancing: 1
