@@ -12,6 +12,9 @@ MonoBehaviour:
   m_Name: My Pipeline
   m_EditorClassIdentifier: 
   shadowMapSize: 4096
+  shadowCascades: 4
+  twoCascadesSplit: 0.25
+  fourCascadesSplit: {x: 0.067, y: 0.2, z: 0.467}
   shadowDistance: 10
   dynamicBatching: 1
   instancing: 1
