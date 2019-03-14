@@ -3,11 +3,15 @@
 	Properties
 	{
 		_Color ("Color", Color) = (1, 1, 1, 1)
+		_MainTex("Albedo & Alpha", 2D) = "white" {}
+		_Cutoff ("Alpha Cutoff", Range(0, 1)) = 0.5
+		[Enum(UnityEngine.Rendering.CullMode)]_Cull ("Cull", Float) = 2
 	}
 	SubShader
 	{
 		Pass
 		{
+			Cull[_Cull]
 			HLSLPROGRAM
 			#pragma target 3.5
 			
@@ -27,6 +31,7 @@
 
 		Pass
 		{
+			Cull[_Cull]
 			Tags { "LightMode" = "ShadowCaster" }
 			HLSLPROGRAM
 			#pragma target 3.5
