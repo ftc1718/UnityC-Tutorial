@@ -54,7 +54,7 @@ public class MyPipeline : RenderPipeline
     static int worldToShadowCascadeMatricesID = Shader.PropertyToID("_WorldToShadowCascadeMatrices");
 
     static int cascadeShadowMapSizeID = Shader.PropertyToID("_CascadeShadowMapSize");
-    static int cascadeShadoStrengthID = Shader.PropertyToID("_CascadeShadowStrength");
+    static int cascadeShadowStrengthID = Shader.PropertyToID("_CascadeShadowStrength");
     static int cascadeCullingSpheresID = Shader.PropertyToID("_CascadeCullingSpheres");
 
     Vector4[] visibleLightColors = new Vector4[maxVisibleLights];
@@ -246,7 +246,6 @@ public class MyPipeline : RenderPipeline
 
     void RendercascadeShadows(ScriptableRenderContext context)
     {
-
         float tileSize = shadowMapSize / 2;
         cascadeShadowMap = SetShadowRenderTarget();
         shadowBuffer.BeginSample("Render Shadows");
@@ -274,7 +273,7 @@ public class MyPipeline : RenderPipeline
             shadowBuffer.Clear();
 
             cascadeCullingSpheres[i] = 
-            shadowSettings.splitData.cullingSphere = splitData.cullingSphere;
+                shadowSettings.splitData.cullingSphere = splitData.cullingSphere;
             cascadeCullingSpheres[i].w *= splitData.cullingSphere.w;
             context.DrawShadows(ref shadowSettings);
             CalculateWorldToShadowMatrix(ref viewMatrix, ref projectionMatrix, out worldToShadowCascadeMatrices[i]);
@@ -291,9 +290,9 @@ public class MyPipeline : RenderPipeline
         shadowBuffer.SetGlobalMatrixArray(worldToShadowCascadeMatricesID, worldToShadowCascadeMatrices);
 
         float invShadowMapSize = 1f / shadowMapSize;
-        shadowBuffer.SetGlobalVector(cascadeShadowMapID, new Vector4(
+        shadowBuffer.SetGlobalVector(cascadeShadowMapSizeID, new Vector4(
                 invShadowMapSize, invShadowMapSize, shadowMapSize, shadowMapSize));
-        shadowBuffer.SetGlobalFloat(cascadeShadowMapID, shadowLight.shadowStrength);
+        shadowBuffer.SetGlobalFloat(cascadeShadowStrengthID, shadowLight.shadowStrength);
 
         bool hardShadow = shadowLight.shadows == LightShadows.Hard;
         CoreUtils.SetKeyword(shadowBuffer, cascadeShadowsHardKeyword, hardShadow);

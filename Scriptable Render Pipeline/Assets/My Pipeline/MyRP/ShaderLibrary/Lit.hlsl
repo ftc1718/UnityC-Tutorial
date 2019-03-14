@@ -246,13 +246,14 @@ float4 LitPassFragment(VertexOutput input) : SV_TARGET
     #if defined(_CASCADE_SHADOWS_HARD) || defined(_CASCADE_SHADOWS_SOFT)
 		diffuseLight += MainLight(input.normal, input.worldPos);
 	#endif
-	
+
     for(int i = 0; i < min(unity_LightIndicesOffsetAndCount.y, 4); i++)
     {
         int lightIndex = unity_4LightIndices0[i];
 		float shadowAttenuation = ShadowAttenuation(i, input.worldPos);
         diffuseLight += DiffuseLight(lightIndex, input.normal, input.worldPos, shadowAttenuation);
     }
+
     // diffuseLight = saturate(dot(input.normal, float3(0, 1,0)));
     float3 color = diffuseLight * albedo;
     return float4(color, 1);
