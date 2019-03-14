@@ -4,6 +4,7 @@
 	{
 		_Color ("Color", Color) = (1, 1, 1, 1)
 		_MainTex("Albedo & Alpha", 2D) = "white" {}
+		[Toggle(_CLIPPING)] _Clipping("Alpha Clipping", Float) = 0
 		_Cutoff ("Alpha Cutoff", Range(0, 1)) = 0.5
 		[Enum(UnityEngine.Rendering.CullMode)]_Cull ("Cull", Float) = 2
 	}
@@ -17,6 +18,8 @@
 			
 			#pragma multi_compile_instancing
 			#pragma instancing_options assumeuniformscaling
+
+			#pragma shader_feature _CLIPPING
 
 			#pragma multi_compile _ _CASCADE_SHADOWS_SOFT _CASCADE_SHADOWS_HARD
 			#pragma multi_compile _ _SHADOWS_SOFT
@@ -39,6 +42,8 @@
 			#pragma multi_compile_instancing
 			#pragma instancing_options assumeuniformscaling
 
+			#pragma shader_feature _CLIPPING
+			
 			#pragma vertex ShadowCasterPassVertex
 			#pragma fragment ShadowCasterPassFragment
 
