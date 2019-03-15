@@ -38,7 +38,7 @@ public static class DoubleSidedMeshMenuItem
         AssetDatabase.CreateAsset(
             combinedMesh,
             System.IO.Path.Combine(
-                "Assets\Meshes", sourceMesh.name + " Double-Sided.asset"
+                "Assets/Meshes", sourceMesh.name + " Double-Sided.asset"
             )
         );
     }
