@@ -383,7 +383,7 @@ Light:
     m_Type: 2
     m_Resolution: -1
     m_CustomResolution: -1
-    m_Strength: 1
+    m_Strength: 0.763
     m_Bias: 0.01
     m_NormalBias: 0.4
     m_NearPlane: 0.2
@@ -1385,8 +1385,8 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 534669902}
-  m_LocalRotation: {x: -0.3831497, y: -0.32167065, z: 0.14435552, w: -0.85374814}
-  m_LocalPosition: {x: -7.0422335, y: 1.8399467, z: 2.1582222}
+  m_LocalRotation: {x: -0.28712496, y: -0.02760482, z: 0.00827429, w: -0.95745957}
+  m_LocalPosition: {x: -5.406563, y: 2.716459, z: -1.3166885}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
