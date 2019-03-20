@@ -31,7 +31,7 @@ CBUFFER_START(_ShadowBuffer)
 	float4 _ShadowMapSize;
     float4 _CascadeShadowMapSize;
 	float4 _GlobalShadowData;
-    float4 _CascadeShadowStrength;
+    float _CascadeShadowStrength;
 CBUFFER_END
 
 CBUFFER_START(UnityPerFrame)
@@ -189,14 +189,15 @@ float CascadeShadowAttenuation(float3 worldPos)
     float cascadeIndex = 4 - dot(cascadeFlags, float4(4, 3, 2, 1));
     float4 shadowPos = mul(
 		_WorldToShadowCascadeMatrices[cascadeIndex], float4(worldPos, 1.0)
-	);
+    );
     float attenuation;
     #if defined(_CASCADE_SHADOWS_HARD)
 		attenuation = HardShadowAttenuation(shadowPos, true);
     #else
         attenuation = SoftShadowAttenuation(shadowPos, true);
     #endif	
-        return lerp(1, attenuation, _CascadeShadowStrength);
+
+    return lerp(1, attenuation, _CascadeShadowStrength);
 }
 
 float3 MainLight(float3 normal, float3 worldPos)

@@ -10,7 +10,7 @@ public class MyPipeline : RenderPipeline
     int shadowMapSize;
     int shadowTileCount;
     float shadowDistance;
-
+    
     int shadowCascades;
     Vector3 shadowCascadesSplit;
 
