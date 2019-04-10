@@ -5,6 +5,7 @@
 
 #include "CoreRP/ShaderLibrary/Common.hlsl"
 #include "CoreRP/ShaderLibrary/Shadow/ShadowSamplingTent.hlsl"
+#include "MyRP/ShaderLibrary/Lighting.hlsl"
 
 CBUFFER_START(UnityPerDraw)
     float4x4 unity_ObjectToWorld;
@@ -48,6 +49,7 @@ CBUFFER_END
 
 UNITY_INSTANCING_BUFFER_START(PerInstance)
 	UNITY_DEFINE_INSTANCED_PROP(float4, _Color)
+    UNITY_DEFINE_INSTANCED_PROP(float, _Smoothness)
 UNITY_INSTANCING_BUFFER_END(PerInstance)
 
 TEXTURE2D_SHADOW(_ShadowMap);
@@ -70,17 +72,17 @@ float InsideCascadeCullingSphere(int index, float3 worldPos)
     return dot(worldPos - s.xyz, worldPos - s.xyz) < s.w;
 }
 
-float3 DiffuseLight(int index, float3 normal, float3 worldPos, float shadowAttenuation)
+float3 GenericLight(int index, LitSurface s, float shadowAttenuation)
 {
     float3 lightColor = _VisibleLightColors[index].rgb;
     float4 lightDirectionOrPosition = _VisibleLightDirectionsOrPositions[index];
     float4 lightAttenuation = _VisibleLightAttenuations[index];
     float3 spotDirection = _VisibleLightSpotDirections[index].xyz;
 
-    float3 lightVector = lightDirectionOrPosition.xyz - worldPos * lightDirectionOrPosition.w;
+    float3 lightVector = lightDirectionOrPosition.xyz - s.position * lightDirectionOrPosition.w;
     float3 lightDirection = normalize(lightVector);
 
-    float diffuse = saturate(dot(lightDirection, normal));
+    float color = LightSurface(s, lightDirection);
 
     float rangeFade = dot(lightVector, lightVector) * lightAttenuation.x;
     rangeFade = saturate(1 - rangeFade * rangeFade);
@@ -91,8 +93,8 @@ float3 DiffuseLight(int index, float3 normal, float3 worldPos, float shadowAtten
 	spotFade *= spotFade;
 
     float distanceSqr = max(dot(lightVector, lightVector), 0.00001);
-    diffuse *= shadowAttenuation * spotFade * rangeFade / distanceSqr;
-    return diffuse * lightColor;
+    color *= shadowAttenuation * spotFade * rangeFade / distanceSqr;
+    return color * lightColor;
 }
 
 float HardShadowAttenuation(float4 shadowPos, bool cascade = false)
@@ -200,14 +202,14 @@ float CascadeShadowAttenuation(float3 worldPos)
     return lerp(1, attenuation, _CascadeShadowStrength);
 }
 
-float3 MainLight(float3 normal, float3 worldPos)
+float3 MainLight(LitSurface s)
 {
-    float shadowAttenuation = CascadeShadowAttenuation(worldPos);
+    float shadowAttenuation = CascadeShadowAttenuation(s.position);
     float3 lightColor = _VisibleLightColors[0].rgb;
     float3 lightDirection = _VisibleLightDirectionsOrPositions[0].xyz;
-    float diffuse = saturate(dot(normal, lightDirection));
-    diffuse *= shadowAttenuation;
-    return diffuse * lightColor;
+    float color = LightSurface(s, lightDirection);
+    color *= shadowAttenuation;
+    return color * lightColor;
 }
 
 
@@ -239,12 +241,13 @@ VertexOutput LitPassVertex(VertexInput input)
     output.normal = mul((float3x3)UNITY_MATRIX_M, input.normal);
     output.worldPos = worldPos.xyz;
 
+    LitSurface surface = GetLitSurfaceVertex(output.normal, output.worldPos);
     output.vertexLighting = 0;
     for (int i = 4; i < min(unity_LightIndicesOffsetAndCount.y, 8); i++)
     {
 		int lightIndex = unity_4LightIndices1[i - 4];
-		output.vertexLighting += DiffuseLight(lightIndex, output.normal, output.worldPos, 1);
-	}
+        output.vertexLighting += GenericLight(lightIndex, surface, 1);
+    }
 
     output.uv = TRANSFORM_TEX(input.uv, _MainTex);
 
@@ -263,22 +266,26 @@ float4 LitPassFragment(VertexOutput input, FRONT_FACE_TYPE isFrontFace : FRONT_F
     clip(albedoAlpha.a - _Cutoff);
     #endif
 
+    float3 viewDir = normalize(_WorldSpaceCameraPos - input.worldPos.xyz);
+    LitSurface surface = GetLitSurface(input.normal, input.worldPos, viewDir,
+		albedoAlpha.rgb, UNITY_ACCESS_INSTANCED_PROP(PerInstance, _Smoothness));
+
     // float diffuseLight = saturate(dot(input.normal, float3(0, 1, 0)));
-    float3 diffuseLight = input.vertexLighting;
+    float3 color = input.vertexLighting * surface.diffuse;
 
     #if defined(_CASCADE_SHADOWS_HARD) || defined(_CASCADE_SHADOWS_SOFT)
-		diffuseLight += MainLight(input.normal, input.worldPos);
+		color += MainLight(surface);
 	#endif
 
     for(int i = 0; i < min(unity_LightIndicesOffsetAndCount.y, 4); i++)
     {
         int lightIndex = unity_4LightIndices0[i];
 		float shadowAttenuation = ShadowAttenuation(i, input.worldPos);
-        diffuseLight += DiffuseLight(lightIndex, input.normal, input.worldPos, shadowAttenuation);
+        color += GenericLight(lightIndex, surface, shadowAttenuation);
     }
 
     // diffuseLight = saturate(dot(input.normal, float3(0, 1,0)));
-    float3 color = diffuseLight * albedoAlpha.rgb;
+    color *= albedoAlpha.rgb;
     return float4(color, albedoAlpha.a);
 }
 
