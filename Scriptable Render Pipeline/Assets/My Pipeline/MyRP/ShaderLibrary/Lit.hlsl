@@ -50,6 +50,7 @@ CBUFFER_END
 
 UNITY_INSTANCING_BUFFER_START(PerInstance)
 	UNITY_DEFINE_INSTANCED_PROP(float4, _Color)
+    UNITY_DEFINE_INSTANCED_PROP(float, _Metallic)
     UNITY_DEFINE_INSTANCED_PROP(float, _Smoothness)
 UNITY_INSTANCING_BUFFER_END(PerInstance)
 
@@ -279,8 +280,9 @@ float4 LitPassFragment(VertexOutput input, FRONT_FACE_TYPE isFrontFace : FRONT_F
     #endif
 
     float3 viewDir = normalize(_WorldSpaceCameraPos - input.worldPos.xyz);
-    LitSurface surface = GetLitSurface(input.normal, input.worldPos, viewDir,
-		albedoAlpha.rgb, UNITY_ACCESS_INSTANCED_PROP(PerInstance, _Smoothness));
+    LitSurface surface = GetLitSurface(input.normal, input.worldPos, viewDir, albedoAlpha.rgb,
+        UNITY_ACCESS_INSTANCED_PROP(PerInstance, _Metallic),
+        UNITY_ACCESS_INSTANCED_PROP(PerInstance, _Smoothness));
 
     // float diffuseLight = saturate(dot(input.normal, float3(0, 1, 0)));
     float3 color = input.vertexLighting * surface.diffuse;
@@ -299,7 +301,7 @@ float4 LitPassFragment(VertexOutput input, FRONT_FACE_TYPE isFrontFace : FRONT_F
     // diffuseLight = saturate(dot(input.normal, float3(0, 1,0)));
     color *= albedoAlpha.rgb;
 
-    color = ReflectEnvironment(surface, SampleEnvironment(surface));
+    color += ReflectEnvironment(surface, SampleEnvironment(surface));
     return float4(color, albedoAlpha.a);
 }
 

@@ -209,6 +209,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   color: {r: 0.9370116, g: 1, b: 0.4198113, a: 1}
+  metallic: 0
   smoothness: 0.5
 --- !u!23 &111848704
 MeshRenderer:
@@ -295,6 +296,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   color: {r: 0, g: 0.60992855, b: 0.745283, a: 1}
+  metallic: 0
   smoothness: 0.5
 --- !u!23 &148552061
 MeshRenderer:
@@ -447,6 +449,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   color: {r: 0.30015132, g: 0.8962264, b: 0.31750858, a: 1}
+  metallic: 0
   smoothness: 0.791
 --- !u!23 &199607116
 MeshRenderer:
@@ -620,6 +623,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   color: {r: 0, g: 0.60992855, b: 0.745283, a: 1}
+  metallic: 0
   smoothness: 0.5
 --- !u!23 &259687166
 MeshRenderer:
@@ -706,6 +710,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   color: {r: 0.8113208, g: 0.25640798, b: 0.66355056, a: 1}
+  metallic: 0
   smoothness: 0.5
 --- !u!23 &309623895
 MeshRenderer:
@@ -792,6 +797,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   color: {r: 0.6868548, g: 0.7929078, b: 0.990566, a: 1}
+  metallic: 0
   smoothness: 0.5
 --- !u!23 &330815674
 MeshRenderer:
@@ -878,6 +884,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   color: {r: 0.5903881, g: 0.34349412, b: 0.8773585, a: 1}
+  metallic: 0
   smoothness: 0.5
 --- !u!23 &406834171
 MeshRenderer:
@@ -964,6 +971,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   color: {r: 0.6868548, g: 0.7929078, b: 0.990566, a: 1}
+  metallic: 0
   smoothness: 0.5
 --- !u!23 &409013788
 MeshRenderer:
@@ -1050,6 +1058,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   color: {r: 0.759434, g: 1, b: 0.9837018, a: 1}
+  metallic: 0
   smoothness: 0.5
 --- !u!23 &444842755
 MeshRenderer:
@@ -1202,6 +1211,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   color: {r: 0.7075472, g: 0.12348701, b: 0.12348701, a: 1}
+  metallic: 0
   smoothness: 0.5
 --- !u!23 &492243346
 MeshRenderer:
@@ -1395,8 +1405,8 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 534669902}
-  m_LocalRotation: {x: -0.3567121, y: 0.11834442, z: -0.045615695, w: -0.9255649}
-  m_LocalPosition: {x: -4.4118605, y: 2.1667361, z: 1.3681922}
+  m_LocalRotation: {x: -0.17485644, y: -0.032806613, z: 0.0058241957, w: -0.98403007}
+  m_LocalPosition: {x: -4.3309436, y: 1.1702753, z: 1.356555}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -1442,8 +1452,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2b591deaf50204222ace1f40e0c9c557, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  color: {r: 0, g: 0.60992855, b: 0.745283, a: 1}
-  smoothness: 0.5
+  color: {r: 0.53813636, g: 0.7701809, b: 0.8207547, a: 1}
+  metallic: 1
+  smoothness: 0.687
 --- !u!23 &571508817
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -1595,6 +1606,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   color: {r: 0.4292453, g: 1, b: 0.8147604, a: 1}
+  metallic: 0
   smoothness: 0.5
 --- !u!23 &678343744
 MeshRenderer:
@@ -1681,6 +1693,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   color: {r: 0.4292453, g: 1, b: 0.8147604, a: 1}
+  metallic: 0
   smoothness: 0.5
 --- !u!23 &884923186
 MeshRenderer:
@@ -1854,6 +1867,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   color: {r: 0.6868548, g: 0.7929078, b: 0.990566, a: 1}
+  metallic: 0
   smoothness: 0.5
 --- !u!23 &955215609
 MeshRenderer:
@@ -1940,6 +1954,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   color: {r: 0.5943396, g: 0.44851184, b: 0.047659315, a: 1}
+  metallic: 0
   smoothness: 0.5
 --- !u!23 &975704256
 MeshRenderer:
@@ -2026,6 +2041,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   color: {r: 1, g: 0.91246635, b: 0.5801887, a: 1}
+  metallic: 0
   smoothness: 0.5
 --- !u!23 &1120886992
 MeshRenderer:
@@ -2284,6 +2300,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   color: {r: 0.9622642, g: 0.4897362, b: 0.031772893, a: 1}
+  metallic: 0
   smoothness: 0.5
 --- !u!23 &1229089509
 MeshRenderer:
@@ -2370,6 +2387,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   color: {r: 0.66110563, g: 0.9433962, b: 0.4138483, a: 1}
+  metallic: 0
   smoothness: 0.5
 --- !u!23 &1232647688
 MeshRenderer:
@@ -2456,6 +2474,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   color: {r: 0.5943396, g: 0.44851184, b: 0.047659315, a: 1}
+  metallic: 0
   smoothness: 0.5
 --- !u!23 &1239723388
 MeshRenderer:
@@ -2542,6 +2561,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   color: {r: 0.9622642, g: 0.4897362, b: 0.031772893, a: 1}
+  metallic: 0
   smoothness: 0.5
 --- !u!23 &1289736249
 MeshRenderer:
@@ -2628,6 +2648,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   color: {r: 0.30015132, g: 0.8962264, b: 0.31750858, a: 1}
+  metallic: 0
   smoothness: 0.5
 --- !u!23 &1315537147
 MeshRenderer:
@@ -2714,6 +2735,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   color: {r: 0.30015132, g: 0.8962264, b: 0.31750858, a: 1}
+  metallic: 0
   smoothness: 0.5
 --- !u!23 &1317746593
 MeshRenderer:
@@ -2866,6 +2888,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   color: {r: 0.26415092, g: 0.0062299734, b: 0.093100235, a: 1}
+  metallic: 0
   smoothness: 0.5
 --- !u!23 &1431876839
 MeshRenderer:
@@ -2952,6 +2975,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   color: {r: 0.26415092, g: 0.0062299734, b: 0.093100235, a: 1}
+  metallic: 0
   smoothness: 0.5
 --- !u!23 &1487338556
 MeshRenderer:
@@ -3038,6 +3062,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   color: {r: 0.9370116, g: 1, b: 0.4198113, a: 1}
+  metallic: 0
   smoothness: 0.5
 --- !u!23 &1514852769
 MeshRenderer:
@@ -3124,6 +3149,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   color: {r: 0.9370116, g: 1, b: 0.4198113, a: 1}
+  metallic: 0
   smoothness: 0.5
 --- !u!23 &1533462410
 MeshRenderer:
@@ -3210,6 +3236,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   color: {r: 0.8113208, g: 0.25640798, b: 0.66355056, a: 1}
+  metallic: 0
   smoothness: 0.5
 --- !u!23 &1581538328
 MeshRenderer:
@@ -3296,6 +3323,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   color: {r: 0.5903881, g: 0.34349412, b: 0.8773585, a: 1}
+  metallic: 0
   smoothness: 0.5
 --- !u!23 &1616050183
 MeshRenderer:
@@ -3382,6 +3410,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   color: {r: 0.5903881, g: 0.34349412, b: 0.8773585, a: 1}
+  metallic: 0
   smoothness: 0.5
 --- !u!23 &1681476201
 MeshRenderer:
@@ -3468,6 +3497,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   color: {r: 1, g: 0.8586725, b: 0.10849059, a: 1}
+  metallic: 0
   smoothness: 0.5
 --- !u!23 &1704013008
 MeshRenderer:
@@ -3554,6 +3584,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   color: {r: 0.108935155, g: 0.38679248, b: 0.056559276, a: 1}
+  metallic: 0
   smoothness: 0.5
 --- !u!23 &1739890178
 MeshRenderer:
@@ -3640,6 +3671,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   color: {r: 0.30015132, g: 0.8962264, b: 0.31750858, a: 1}
+  metallic: 0
   smoothness: 0.5
 --- !u!23 &1813515195
 MeshRenderer:
@@ -3726,6 +3758,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   color: {r: 0.108935155, g: 0.38679248, b: 0.056559276, a: 1}
+  metallic: 0
   smoothness: 0.5
 --- !u!23 &1871708729
 MeshRenderer:
@@ -3963,6 +3996,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   color: {r: 0.23962279, g: 0.21693665, b: 0.6132076, a: 1}
+  metallic: 0
   smoothness: 0.5
 --- !u!23 &2089135981
 MeshRenderer:
