@@ -9,7 +9,7 @@
 #include "MyRP/ShaderLibrary/Lighting.hlsl"
 
 CBUFFER_START(UnityPerDraw)
-    float4x4 unity_ObjectToWorld;
+    float4x4 unity_ObjectToWorld, unity_WorldToObject;
     float4 unity_LightIndicesOffsetAndCount;
     float4 unity_4LightIndices0, unity_4LightIndices1;
 CBUFFER_END
@@ -46,6 +46,7 @@ CBUFFER_START(UnityPerMaterial)
 CBUFFER_END
 
 #define UNITY_MATRIX_M unity_ObjectToWorld
+#define UNITY_MATRIX_I_M unity_WorldToObject
 #include "CoreRP/ShaderLibrary/UnityInstancing.hlsl"
 
 UNITY_INSTANCING_BUFFER_START(PerInstance)
@@ -251,7 +252,11 @@ VertexOutput LitPassVertex(VertexInput input)
     UNITY_TRANSFER_INSTANCE_ID(input, output);
     float4 worldPos = mul(UNITY_MATRIX_M, float4(input.pos.xyz, 1.0));
     output.clipPos = mul(unity_MatrixVP, worldPos);
+#if defined(UNITY_ASSUME_UNIFORM_SCALING)
     output.normal = mul((float3x3)UNITY_MATRIX_M, input.normal);
+#else
+    output.normal = normalize(mul(input.normal, (float3x3) UNITY_MATRIX_I_M));
+#endif
     output.worldPos = worldPos.xyz;
 
     LitSurface surface = GetLitSurfaceVertex(output.normal, output.worldPos);

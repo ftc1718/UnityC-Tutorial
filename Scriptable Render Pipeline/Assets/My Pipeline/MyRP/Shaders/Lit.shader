@@ -26,7 +26,7 @@
 			#pragma target 3.5
 			
 			#pragma multi_compile_instancing
-			#pragma instancing_options assumeuniformscaling
+			//#pragma instancing_options assumeuniformscaling
 
 			#pragma shader_feature _CLIPPING_ON
 			#pragma shader_feature _RECEIVE_SHADOWS
