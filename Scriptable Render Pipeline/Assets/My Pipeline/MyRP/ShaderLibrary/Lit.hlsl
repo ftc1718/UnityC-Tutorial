@@ -5,6 +5,7 @@
 
 #include "CoreRP/ShaderLibrary/Common.hlsl"
 #include "CoreRP/ShaderLibrary/Shadow/ShadowSamplingTent.hlsl"
+#include "CoreRP/ShaderLibrary/ImageBasedLighting.hlsl"
 #include "MyRP/ShaderLibrary/Lighting.hlsl"
 
 CBUFFER_START(UnityPerDraw)
@@ -212,6 +213,17 @@ float3 MainLight(LitSurface s)
     return color * lightColor;
 }
 
+float3 SampleEnvironment(LitSurface s)
+{
+    float3 reflectVector = reflect(-s.viewDir, s.normal);
+    float mip = PerceptualRoughnessToMipmapLevel(s.perceptualRoughness);
+
+    float3 uvw = reflectVector;
+    float4 sample = SAMPLE_TEXTURECUBE_LOD(unity_SpecCube0, samplerunity_SpecCube0, uvw, mip);
+    float3 color = sample.rgb;
+    return color;
+}
+
 
 struct VertexInput
 {
@@ -286,6 +298,8 @@ float4 LitPassFragment(VertexOutput input, FRONT_FACE_TYPE isFrontFace : FRONT_F
 
     // diffuseLight = saturate(dot(input.normal, float3(0, 1,0)));
     color *= albedoAlpha.rgb;
+
+    color = ReflectEnvironment(surface, SampleEnvironment(surface));
     return float4(color, albedoAlpha.a);
 }
 

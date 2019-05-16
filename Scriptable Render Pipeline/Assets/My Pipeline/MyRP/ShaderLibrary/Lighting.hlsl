@@ -1,6 +1,9 @@
 ﻿#ifndef MYRP_LIGHTING_INCLUDED
 #define MYRP_LIGHTING_INCLUDED
 
+TEXTURECUBE(unity_SpecCube0);
+SAMPLER(samplerunity_SpecCube0);
+
 struct LitSurface
 {
     float3 normal, position, viewDir;
@@ -55,6 +58,18 @@ float3 LightSurface(LitSurface s, float3 lightDir)
 LitSurface GetLitSurfaceVertex(float3 normal, float3 position)
 {
     return GetLitSurface(normal, position, 0, 1, 0, true);
+}
+
+float3 ReflectEnvironment(LitSurface s, float3 environment)
+{
+    if (s.perfectDiffuser)
+    {
+        return 0;
+    }
+	
+    environment *= s.specular;
+    environment /= s.roughness * s.roughness + 1.0;
+    return environment;
 }
 
 #endif // MYRP_LIGHTING_INCLUDED
