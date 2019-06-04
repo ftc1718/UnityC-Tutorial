@@ -6,6 +6,7 @@
 #include "CoreRP/ShaderLibrary/Common.hlsl"
 #include "CoreRP/ShaderLibrary/Shadow/ShadowSamplingTent.hlsl"
 #include "CoreRP/ShaderLibrary/ImageBasedLighting.hlsl"
+#include "CoreRP/ShaderLibrary/EntityLighting.hlsl"
 #include "MyRP/ShaderLibrary/Lighting.hlsl"
 
 CBUFFER_START(UnityPerDraw)
@@ -15,7 +16,11 @@ CBUFFER_START(UnityPerDraw)
 CBUFFER_END
 
 CBUFFER_START(UnityPerCamera)
-		float3 _WorldSpaceCameraPos;
+	float3 _WorldSpaceCameraPos;
+    float4 unity_SpecCube0_BoxMin, unity_SpecCube0_BoxMax;
+    float4 unity_SpecCube0_ProbePosition, unity_SpecCube0_HDR;
+    float4 unity_SpecCube1_BoxMin, unity_SpecCube1_BoxMax;
+    float4 unity_SpecCube1_ProbePosition, unity_SpecCube1_HDR;
 CBUFFER_END
 
 CBUFFER_START(_LightBuffer)
@@ -62,6 +67,22 @@ SAMPLER_CMP(sampler_CascadeShadowMap);
 
 TEXTURE2D(_MainTex);
 SAMPLER(sampler_MainTex);
+
+float3 BoxProjection(
+	float3 direction, float3 position,
+	float4 cubemapPosition, float4 boxMin, float4 boxMax
+)
+{
+    UNITY_BRANCH
+    if (cubemapPosition.w > 0)
+    {
+        float3 factors =
+			((direction > 0 ? boxMax.xyz : boxMin.xyz) - position) / direction;
+        float scalar = min(min(factors.x, factors.y), factors.z);
+        direction = direction * scalar + (position - cubemapPosition.xyz);
+    }
+    return direction;
+}
 
 float DistanceToCameraSqr(float3 worldPos)
 {
@@ -220,9 +241,28 @@ float3 SampleEnvironment(LitSurface s)
     float3 reflectVector = reflect(-s.viewDir, s.normal);
     float mip = PerceptualRoughnessToMipmapLevel(s.perceptualRoughness);
 
-    float3 uvw = reflectVector;
+    //float3 uvw = reflectVector;
+    float3 uvw = BoxProjection(
+		reflectVector, s.position, unity_SpecCube0_ProbePosition,
+		unity_SpecCube0_BoxMin, unity_SpecCube0_BoxMax
+	);
     float4 sample = SAMPLE_TEXTURECUBE_LOD(unity_SpecCube0, samplerunity_SpecCube0, uvw, mip);
-    float3 color = sample.rgb;
+    //float3 color = sample.rgb;
+    float3 color = DecodeHDREnvironment(sample, unity_SpecCube0_HDR);
+
+    float blend = unity_SpecCube0_BoxMin.w;
+    if (blend < 0.99999)
+    {
+        uvw = BoxProjection(
+			reflectVector, s.position,
+			unity_SpecCube1_ProbePosition,
+			unity_SpecCube1_BoxMin, unity_SpecCube1_BoxMax
+		);
+        sample = SAMPLE_TEXTURECUBE_LOD(
+			unity_SpecCube1, samplerunity_SpecCube0, uvw, mip
+		);
+        color = lerp(DecodeHDREnvironment(sample, unity_SpecCube1_HDR), color, blend);
+    }
     return color;
 }
 
@@ -288,6 +328,10 @@ float4 LitPassFragment(VertexOutput input, FRONT_FACE_TYPE isFrontFace : FRONT_F
     LitSurface surface = GetLitSurface(input.normal, input.worldPos, viewDir, albedoAlpha.rgb,
         UNITY_ACCESS_INSTANCED_PROP(PerInstance, _Metallic),
         UNITY_ACCESS_INSTANCED_PROP(PerInstance, _Smoothness));
+
+    #if defined(_PREMULTIPLY_ALPHA)
+		PremultiplyAlpha(surface, albedoAlpha.a);
+	#endif
 
     // float diffuseLight = saturate(dot(input.normal, float3(0, 1, 0)));
     float3 color = input.vertexLighting * surface.diffuse;
