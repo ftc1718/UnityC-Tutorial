@@ -13,6 +13,7 @@ CBUFFER_START(UnityPerDraw)
     float4x4 unity_ObjectToWorld, unity_WorldToObject;
     float4 unity_LightIndicesOffsetAndCount;
     float4 unity_4LightIndices0, unity_4LightIndices1;
+    float4 unity_LightmapST;
 CBUFFER_END
 
 CBUFFER_START(UnityPerCamera)
@@ -67,6 +68,11 @@ SAMPLER_CMP(sampler_CascadeShadowMap);
 
 TEXTURE2D(_MainTex);
 SAMPLER(sampler_MainTex);
+
+TEXTURE2D(unity_Lightmap);
+SAMPLER(samplerunity_Lightmap);
+
+real4 unity_Lightmap_HDR;
 
 float3 BoxProjection(
 	float3 direction, float3 position,
@@ -266,12 +272,29 @@ float3 SampleEnvironment(LitSurface s)
     return color;
 }
 
+float3 SampleLightmap(float2 uv)
+{
+    return SampleSingleLightmap(
+        TEXTURE2D_PARAM(unity_Lightmap, samplerunity_Lightmap), uv, 
+        float4(1, 1, 0, 0),
+        #if defined(UNITY_LIGHTMAP_FULL_HDR)
+	        false,
+        #else
+            true,
+        #endif
+        //float4(LIGHTMAP_HDR_MULTIPLIER, LIGHTMAP_HDR_EXPONENT, 0.0, 0.0) // dont know why LIGHTMAP_HDR_MULTIPLIER is not defined
+        //float4(1, 1, 0, 0)
+        unity_Lightmap_HDR
+    );
+
+}
 
 struct VertexInput
 {
     float4 pos : POSITION;
     float3 normal : NORMAL;
     float2 uv : TEXCOORD0;
+    float2 lightmapUV : TEXCOORD1;
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
@@ -282,8 +305,19 @@ struct VertexOutput
     float3 worldPos : TEXCOORD1;
     float3 vertexLighting : TEXCOORD2;
     float2 uv : TEXCOORD3;
+    #if defined(LIGHTMAP_ON)
+        float2 lightmapUV : TEXCOORD4;
+    #endif
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
+
+float3 GlobalIllumination(VertexOutput input)
+{
+    #if defined(LIGHTMAP_ON)
+        return SampleLightmap(input.lightmapUV);
+    #endif
+    return 0;
+}
 
 VertexOutput LitPassVertex(VertexInput input)
 {
@@ -308,6 +342,9 @@ VertexOutput LitPassVertex(VertexInput input)
     }
 
     output.uv = TRANSFORM_TEX(input.uv, _MainTex);
+    #if defined(LIGHTMAP_ON)
+        output.lightmapUV = input.lightmapUV.xy * unity_LightmapST.xy + unity_LightmapST.zw;
+    #endif
 
     return output;
 }
@@ -320,7 +357,7 @@ float4 LitPassFragment(VertexOutput input, FRONT_FACE_TYPE isFrontFace : FRONT_F
 
     float4 albedoAlpha = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, input.uv);
     albedoAlpha *= UNITY_ACCESS_INSTANCED_PROP(PerInstance, _Color);
-    #if defined(_CLIPPING_ON)
+#if defined(_CLIPPING_ON)
     clip(albedoAlpha.a - _Cutoff);
     #endif
 
@@ -351,6 +388,8 @@ float4 LitPassFragment(VertexOutput input, FRONT_FACE_TYPE isFrontFace : FRONT_F
     color *= albedoAlpha.rgb;
 
     color += ReflectEnvironment(surface, SampleEnvironment(surface));
+
+    color = GlobalIllumination(input);
     return float4(color, albedoAlpha.a);
 }
 

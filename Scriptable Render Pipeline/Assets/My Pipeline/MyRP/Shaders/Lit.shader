@@ -35,6 +35,7 @@
 			#pragma multi_compile _ _CASCADE_SHADOWS_SOFT _CASCADE_SHADOWS_HARD
 			#pragma multi_compile _ _SHADOWS_SOFT
 			#pragma multi_compile _ _SHADOWS_HARD
+			#pragma multi_compile _ LIGHTMAP_ON
 
 			#pragma vertex LitPassVertex
 			#pragma fragment LitPassFragment
