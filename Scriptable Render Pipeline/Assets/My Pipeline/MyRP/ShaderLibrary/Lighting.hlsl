@@ -42,6 +42,11 @@ LitSurface GetLitSurface(
     return s;
 }
 
+LitSurface GetLitSurfaceMeta(float3 color, float metallic, float smoothness)
+{
+    return GetLitSurface(0, 0, 0, color, metallic, smoothness);
+}
+
 float3 LightSurface(LitSurface s, float3 lightDir)
 {
     float3 color = s.diffuse;

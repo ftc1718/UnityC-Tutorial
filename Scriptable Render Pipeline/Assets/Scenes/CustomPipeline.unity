@@ -484,7 +484,7 @@ Light:
   m_CullingMask:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_Lightmapping: 1
+  m_Lightmapping: 2
   m_LightShadowCasterMode: 0
   m_AreaSize: {x: 1, y: 1}
   m_BounceIntensity: 1
@@ -1491,8 +1491,8 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 534669902}
-  m_LocalRotation: {x: -0.0058259424, y: -0.92119956, z: 0.38880256, w: -0.0137889385}
-  m_LocalPosition: {x: -4.016982, y: 4.1501904, z: 2.9121907}
+  m_LocalRotation: {x: -0.0028479036, y: 0.93625873, z: -0.35121733, w: -0.0076074977}
+  m_LocalPosition: {x: -3.3642275, y: 2.021374, z: 3.7969353}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}

@@ -62,6 +62,22 @@
 			#include "MyRP/ShaderLibrary/ShadowCaster.hlsl"
 			ENDHLSL
 		}
+
+		Pass
+		{
+			Tags { "LightMode" = "Meta"}
+
+			Cull Off
+
+			HLSLPROGRAM
+
+			#pragma vertex MetaPassVertex
+			#pragma fragment MetaPassFragment
+
+			#include "../ShaderLibrary/Meta.hlsl"
+
+			ENDHLSL
+		}
 	}
 	CustomEditor "LitShaderGUI"
 }
