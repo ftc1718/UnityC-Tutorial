@@ -1,3 +1,5 @@
+// Upgrade NOTE: upgraded instancing buffer 'InstanceProperties' to new syntax.
+
 #ifndef MY_SHADOWS_INCLUDED
 #define MY_SHADOWS_INCLUDED
 
@@ -17,9 +19,10 @@
     #endif
 #endif
 
-UNITY_INSTANCING_CBUFFER_START(InstanceProperties)
+UNITY_INSTANCING_BUFFER_START(InstanceProperties)
 	UNITY_DEFINE_INSTANCED_PROP(float4, _Color)
-UNITY_INSTANCING_CBUFFER_END
+#define _Color_arr InstanceProperties
+UNITY_INSTANCING_BUFFER_END(InstanceProperties)
 
 // float4 _Color;
 sampler2D _MainTex;
@@ -39,11 +42,7 @@ struct VertexData
 struct InterpolatorsVertex
 {
     UNITY_VERTEX_INPUT_INSTANCE_ID
-    #if SHADOWS_SEMITRANSPARENT || defined(LOD_FADE_CROSSFADE)
-		UNITY_VPOS_TYPE vpos : VPOS;
-    #else
-        float4 position : SV_POSITION;
-    #endif
+    float4 position : SV_POSITION;
 
     #if SHADOWS_NEED_UV
         float2 uv : TEXCOORD0;
@@ -57,7 +56,7 @@ struct InterpolatorsVertex
 struct Interpolators
 {
     UNITY_VERTEX_INPUT_INSTANCE_ID
-    #if SHADOWS_SEMITRANSPARENT
+    #if SHADOWS_SEMITRANSPARENT || defined(LOD_FADE_CROSSFADE)
         UNITY_VPOS_TYPE vpos : VPOS;
     #else
         float4 positions : SV_POSITION;
@@ -74,7 +73,7 @@ struct Interpolators
 
 float GetAlpha(Interpolators i)
 {
-	float alpha = UNITY_ACCESS_INSTANCED_PROP(_Color).a;
+	float alpha = UNITY_ACCESS_INSTANCED_PROP(_Color_arr, _Color).a;
 	#if SHADOWS_NEED_UV
 		alpha *= tex2D(_MainTex, i.uv.xy).a;
 	#endif
