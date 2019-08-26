@@ -58,7 +58,8 @@ CBUFFER_END
 UNITY_INSTANCING_BUFFER_START(PerInstance)
 	UNITY_DEFINE_INSTANCED_PROP(float4, _Color)
     UNITY_DEFINE_INSTANCED_PROP(float, _Metallic)
-    UNITY_DEFINE_INSTANCED_PROP(float, _Smoothness)
+	UNITY_DEFINE_INSTANCED_PROP(float, _Smoothness)
+	UNITY_DEFINE_INSTANCED_PROP(float4, _EmissionColor)
 UNITY_INSTANCING_BUFFER_END(PerInstance)
 
 TEXTURE2D_SHADOW(_ShadowMap);
@@ -390,6 +391,7 @@ float4 LitPassFragment(VertexOutput input, FRONT_FACE_TYPE isFrontFace : FRONT_F
     color += ReflectEnvironment(surface, SampleEnvironment(surface));
 
     color += GlobalIllumination(input) * surface.diffuse;
+	color += UNITY_ACCESS_INSTANCED_PROP(PerInstance, _EmissionColor).rgb;
     return float4(color, albedoAlpha.a);
 }
 
