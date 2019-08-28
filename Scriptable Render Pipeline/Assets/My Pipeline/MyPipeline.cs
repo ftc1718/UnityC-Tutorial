@@ -194,14 +194,6 @@ public class MyPipeline : RenderPipeline
                 continue;
             }
 
-            if(shadowData[i].y <= 0f)
-            {
-                hardShadows = true;
-            }
-            else
-            {
-                softShadows = true;
-            }
 
             Vector2 tileOffset = ConfigureShadowTile(tileIndex, split, tileSize);
             shadowData[i].z = tileOffset.x * tileScale;
@@ -209,10 +201,6 @@ public class MyPipeline : RenderPipeline
 
             shadowBuffer.SetViewProjectionMatrices(viewMatrix, projectionMatrix);
             shadowBuffer.SetGlobalFloat(shadowBiasID, cull.visibleLights[i].light.shadowBias);
-            shadowBuffer.SetGlobalVectorArray(shadowDataID, shadowData);
-            float invShadowMapSize = 1f / shadowMapSize;
-            shadowBuffer.SetGlobalVector(shadowMapSizeID, new Vector4(
-                    invShadowMapSize, invShadowMapSize, shadowMapSize, shadowMapSize));
             context.ExecuteCommandBuffer(shadowBuffer);
             shadowBuffer.Clear();
 
@@ -223,9 +211,15 @@ public class MyPipeline : RenderPipeline
             CalculateWorldToShadowMatrix(ref viewMatrix, ref projectionMatrix, out worldToShadowMatrices[i]);
 
             tileIndex += 1;
+            if(shadowData[i].y <= 0f)
+            {
+                hardShadows = true;
+            }
+            else
+            {
+                softShadows = true;
+            }
         }
-        CoreUtils.SetKeyword(shadowBuffer, shadowsSoftKeyword, softShadows);
-        CoreUtils.SetKeyword(shadowBuffer, shadowsHardKeyword, hardShadows);
         //if (split > 1)
         //{
             shadowBuffer.DisableScissorRect();
@@ -233,6 +227,10 @@ public class MyPipeline : RenderPipeline
         shadowBuffer.SetGlobalTexture(shadowMapID, shadowMap);
         shadowBuffer.SetGlobalMatrixArray(worldToShadowMatricesID, worldToShadowMatrices);
 
+        shadowBuffer.SetGlobalVectorArray(shadowDataID, shadowData);
+        float invShadowMapSize = 1f / shadowMapSize;
+        shadowBuffer.SetGlobalVector(shadowMapSizeID, new Vector4(
+                invShadowMapSize, invShadowMapSize, shadowMapSize, shadowMapSize));
         //if (cull.visibleLights[0].light.shadows == LightShadows.Soft)
         //{
         //    shadowBuffer.EnableShaderKeyword(shadowsSoftKeyword);
@@ -241,6 +239,8 @@ public class MyPipeline : RenderPipeline
         //{
         //    shadowBuffer.DisableShaderKeyword(shadowsSoftKeyword);
         //}
+        CoreUtils.SetKeyword(shadowBuffer, shadowsSoftKeyword, softShadows);
+        CoreUtils.SetKeyword(shadowBuffer, shadowsHardKeyword, hardShadows);
         shadowBuffer.EndSample("Render Shadows");
         context.ExecuteCommandBuffer(shadowBuffer);
         shadowBuffer.Clear();
@@ -251,6 +251,7 @@ public class MyPipeline : RenderPipeline
         float tileSize = shadowMapSize / 2;
         cascadeShadowMap = SetShadowRenderTarget();
         shadowBuffer.BeginSample("Render Shadows");
+        shadowBuffer.SetGlobalVector(globalShadowDataID, new Vector4(0f, shadowDistance * shadowDistance));
         context.ExecuteCommandBuffer(shadowBuffer);
         shadowBuffer.Clear();
 
@@ -395,7 +396,9 @@ public class MyPipeline : RenderPipeline
 
         drawSettings.rendererConfiguration |=
             RendererConfiguration.PerObjectReflectionProbes |
-            RendererConfiguration.PerObjectLightmaps;
+            RendererConfiguration.PerObjectLightmaps |
+            RendererConfiguration.PerObjectLightProbe |
+            RendererConfiguration.PerObjectLightProbeProxyVolume;
 
         // drawSettings.flags = drawFlags;
         drawSettings.sorting.flags = SortFlags.CommonOpaque;

@@ -20,9 +20,9 @@ CBUFFER_END
 
 CBUFFER_START(UnityPerMaterial)
 float4 _MainTex_ST;
-float _Color;
+float4 _Color, _EmissionColor;
 float _Metallic;
-float4 _Smoothness;
+float _Smoothness;
 CBUFFER_END
 
 TEXTURE2D(_MainTex);
@@ -64,6 +64,10 @@ float4 MetaPassFragment(VertexOutput input) : SV_TARGET
         meta.rgb += surface.specular * surface.roughness * 0.5;
         meta.rgb = clamp(PositivePow(meta.rgb, unity_OneOverOutputBoost), 0, unity_MaxOutputValue);
     }
+	if (unity_MetaFragmentControl.y)
+	{
+		meta = float4(_EmissionColor.rgb, 1);
+	}
     return meta;
 }
 #endif //MYRP_LIT_META_INCLUDED

@@ -4,8 +4,9 @@
 LightmapParameters:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_Name: New LightmapParameters
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Tolerant
   serializedVersion: 3
   resolution: 1
   clusterResolution: 0.5

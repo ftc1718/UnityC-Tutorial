@@ -14,6 +14,10 @@ CBUFFER_START(UnityPerDraw)
     float4 unity_LightIndicesOffsetAndCount;
     float4 unity_4LightIndices0, unity_4LightIndices1;
     float4 unity_LightmapST;
+
+	float4 unity_SHAr, unity_SHAg, unity_SHAb;
+	float4 unity_SHBr, unity_SHBg, unity_SHBb;
+	float4 unity_SHC;
 CBUFFER_END
 
 CBUFFER_START(UnityPerCamera)
@@ -29,6 +33,13 @@ CBUFFER_START(_LightBuffer)
     float4 _VisibleLightDirectionsOrPositions[MAX_VISIBLE_LIGHTS];
     float4 _VisibleLightAttenuations[MAX_VISIBLE_LIGHTS];
     float4 _VisibleLightSpotDirections[MAX_VISIBLE_LIGHTS];
+CBUFFER_END
+
+CBUFFER_START(UnityProbeVolume)
+float4 unity_ProbeVolumeParams;
+float4x4 unity_ProbeVolumeWorldToObject;
+float3 unity_ProbeVolumeSizeInv;
+float3 unity_ProbeVolumeMin;
 CBUFFER_END
 
 CBUFFER_START(_ShadowBuffer)
@@ -72,6 +83,9 @@ SAMPLER(sampler_MainTex);
 
 TEXTURE2D(unity_Lightmap);
 SAMPLER(samplerunity_Lightmap);
+
+TEXTURE3D_FLOAT(unity_ProbeVolumeSH);
+SAMPLER(samplerunity_ProbeVolumeSH);
 
 real4 unity_Lightmap_HDR;
 
@@ -290,6 +304,31 @@ float3 SampleLightmap(float2 uv)
 
 }
 
+float3 SampleLightProbes(LitSurface s)
+{
+	if (unity_ProbeVolumeParams.x)
+	{
+		return SampleProbeVolumeSH4(
+			TEXTURE3D_PARAM(unity_ProbeVolumeSH, samplerunity_ProbeVolumeSH),
+			s.position, s.normal, unity_ProbeVolumeWorldToObject,
+			unity_ProbeVolumeParams.y, unity_ProbeVolumeParams.z,
+			unity_ProbeVolumeMin, unity_ProbeVolumeSizeInv
+		);
+	}
+	else
+	{
+		float4 coefficients[7];
+		coefficients[0] = unity_SHAr;
+		coefficients[1] = unity_SHAg;
+		coefficients[2] = unity_SHAb;
+		coefficients[3] = unity_SHBr;
+		coefficients[4] = unity_SHBg;
+		coefficients[5] = unity_SHBb;
+		coefficients[6] = unity_SHC;
+		return max(0.0, SampleSH9(coefficients, s.normal));
+	}
+}
+
 struct VertexInput
 {
     float4 pos : POSITION;
@@ -312,12 +351,14 @@ struct VertexOutput
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
-float3 GlobalIllumination(VertexOutput input)
+float3 GlobalIllumination(VertexOutput input, LitSurface surface)
 {
     #if defined(LIGHTMAP_ON)
         return SampleLightmap(input.lightmapUV);
+	#else
+		return SampleLightProbes(surface);
     #endif
-    return 0;
+    //return 0;
 }
 
 VertexOutput LitPassVertex(VertexInput input)
@@ -390,7 +431,7 @@ float4 LitPassFragment(VertexOutput input, FRONT_FACE_TYPE isFrontFace : FRONT_F
 
     color += ReflectEnvironment(surface, SampleEnvironment(surface));
 
-    color += GlobalIllumination(input) * surface.diffuse;
+    color += GlobalIllumination(input, surface) * surface.diffuse;
 	color += UNITY_ACCESS_INSTANCED_PROP(PerInstance, _EmissionColor).rgb;
     return float4(color, albedoAlpha.a);
 }

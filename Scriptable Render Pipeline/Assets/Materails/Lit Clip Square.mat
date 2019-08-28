@@ -5,17 +5,17 @@ Material:
   serializedVersion: 6
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
   m_Name: Lit Clip Square
   m_Shader: {fileID: 4800000, guid: e3900a579288b934689c81088357902a, type: 3}
-  m_ShaderKeywords: _CLIPPING_OFF _CLIPPING_SHADOW _PREMULTIPLY_ALPHA
+  m_ShaderKeywords: _CLIPPING_ON _CLIPPING_SHADOW _RECEIVE_SHADOWS
   m_LightmapFlags: 4
-  m_EnableInstancingVariants: 0
+  m_EnableInstancingVariants: 1
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: 3000
+  m_CustomRenderQueue: 2450
   stringTagMap: {}
-  disabledShaderPasses:
-  - SHADOWCASTER
+  disabledShaderPasses: []
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
@@ -57,11 +57,11 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Floats:
     - _BumpScale: 1
-    - _Clipping: 0
-    - _Cull: 2
-    - _Cutoff: 0.688
+    - _Clipping: 1
+    - _Cull: 0
+    - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
-    - _DstBlend: 10
+    - _DstBlend: 0
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
@@ -69,15 +69,15 @@ Material:
     - _Mode: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.02
-    - _PremulAlpha: 1
+    - _PremulAlpha: 0
     - _ReceiveShadow: 1
-    - _ReceiveShadows: 0
+    - _ReceiveShadows: 1
     - _Smoothness: 0.5
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _UVSec: 0
-    - _ZWrite: 0
+    - _ZWrite: 1
     m_Colors:
-    - _Color: {r: 0.19215684, g: 0.65420973, b: 0.8980392, a: 1}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
