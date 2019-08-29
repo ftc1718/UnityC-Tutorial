@@ -41,6 +41,8 @@ public class MyPipeline : RenderPipeline
     const string cascadeShadowsSoftKeyword = "_CASCADE_SHADOWS_SOFT";
     const string shadowmaskKeyword = "_SHADOWMASK";
     const string distanceShadowmaskKeyword = "_DISTANCE_SHADOWMASK";
+    const string subtractiveLightingKeyword = "_SUBTRACTIVE_LIGHTING";
+    static int subtractiveShadowColorID = Shader.PropertyToID("_SubtractiveShadowColor");
 
     static int visibleLightColorID = Shader.PropertyToID("_VisibleLightColors");
     static int visibleLightDirectionOrPositionID = Shader.PropertyToID("_VisibleLightDirectionsOrPositions");
@@ -492,6 +494,7 @@ public class MyPipeline : RenderPipeline
     {
         mainLightExist = false;
         bool shadowmaskExists = false;
+        bool subtractiveLighting = false;
         shadowTileCount = 0;
         for (int i = 0; i < cull.visibleLights.Count; i++)
         {
@@ -507,8 +510,12 @@ public class MyPipeline : RenderPipeline
             visibleLightOcclusionMasks[i] = occlusionMasks[baking.occlusionMaskChannel + 1];
             if (baking.lightmapBakeType == LightmapBakeType.Mixed)
             {
-                shadowmaskExists |=
-                    baking.mixedLightingMode == MixedLightingMode.Shadowmask;
+                shadowmaskExists |= baking.mixedLightingMode == MixedLightingMode.Shadowmask;
+                if(baking.mixedLightingMode == MixedLightingMode.Subtractive)
+                {
+                    subtractiveLighting = true;
+                    cameraBuffer.SetGlobalColor(subtractiveShadowColorID, RenderSettings.subtractiveShadowColor.linear);
+                }
             }
 
             if (light.lightType == LightType.Directional)
@@ -563,6 +570,7 @@ public class MyPipeline : RenderPipeline
         bool useDistanceShadowmask = QualitySettings.shadowmaskMode == ShadowmaskMode.DistanceShadowmask;
         CoreUtils.SetKeyword(cameraBuffer, shadowmaskKeyword, shadowmaskExists && !useDistanceShadowmask);
         CoreUtils.SetKeyword(cameraBuffer, distanceShadowmaskKeyword, shadowmaskExists && useDistanceShadowmask);
+        CoreUtils.SetKeyword(cameraBuffer, subtractiveLightingKeyword, subtractiveLighting);
 
         if (mainLightExist || cull.visibleLights.Count > maxVisibleLights)
         {

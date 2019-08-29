@@ -53,6 +53,7 @@ CBUFFER_START(_ShadowBuffer)
     float4 _CascadeShadowMapSize;
 	float4 _GlobalShadowData;
     float _CascadeShadowStrength;
+	float4 _SubtractiveShadowColor;
 CBUFFER_END
 
 CBUFFER_START(UnityPerFrame)
@@ -68,7 +69,7 @@ CBUFFER_END
 #define UNITY_MATRIX_I_M unity_WorldToObject
 
 #if !defined(LIGHTMAP_ON)
-	#if defined(_SHADOWMASK) || defined(_DISTANCE_SHADOWMASK)
+	#if defined(_SHADOWMASK) || defined(_DISTANCE_SHADOWMASK) || defined(_SUBTRACTIVE_LIGHTING)
 		#define SHADOWS_SHADOWMASK
 	#endif
 #endif
@@ -154,6 +155,19 @@ float MixRealtimeAndBakedShadowAttenuation(float realtime, float4 bakedShadows, 
 			}
 			return lerp(realtime, baked, t);
 		}
+	#elif defined(_SUBTRACTIVE_LIGHTING)
+		#if !defined(LIGHTMAP_ON)
+			if (isMainLight)
+			{
+				return min(fadedRealtime, bakedShadows.x);
+			}
+		#endif
+		#if !defined(_CASCADED_SHADOWS_HARD) && !defined(_CASCADED_SHADOWS_SOFT)
+			if (lightIndex == 0)
+			{
+				return bakedShadows.x;
+			}
+		#endif
 	#endif
 	return fadedRealtime;
 }
@@ -262,7 +276,7 @@ float ShadowAttenuation(int index, float3 worldPos)
 	return lerp(1, attenuation, _ShadowData[index].x);
 }
 
-float CascadeShadowAttenuation(float3 worldPos)
+float CascadeShadowAttenuation(float3 worldPos, bool applyStrength = true)
 {
     #if !defined(_RECEIVE_SHADOWS)
         return 1.0;
@@ -296,7 +310,10 @@ float CascadeShadowAttenuation(float3 worldPos)
         attenuation = SoftShadowAttenuation(shadowPos, true);
     #endif	
 
-    return lerp(1, attenuation, _CascadeShadowStrength);
+	if (applyStrength)
+		return lerp(1, attenuation, _CascadeShadowStrength);
+	else
+		return attenuation;
 }
 
 float3 MainLight(LitSurface s, float shadowAttenuation)
@@ -392,6 +409,23 @@ float3 SampleLightProbes(LitSurface s)
 	}
 }
 
+float3 SubtractiveLighting(LitSurface s, float3 bakedLighting)
+{
+	float3 lightColor = _VisibleLightColors[0].rgb;
+	float3 lightDirection = _VisibleLightDirectionsOrPositions[0].xyz;
+	float3 diffuse = lightColor * saturate(dot(lightDirection, s.normal));
+
+	float shadowAttenuation = saturate(
+		CascadeShadowAttenuation(s.position, false) +
+		RealtimeToBakedShadowsInterpolator(s.position)
+	);
+	float3 shadowedLightingGuess = diffuse * (1.0 - shadowAttenuation);
+	float3 subtractedLighting = bakedLighting - shadowedLightingGuess;
+	subtractedLighting = max(subtractedLighting, _SubtractiveShadowColor);
+	subtractedLighting = lerp(bakedLighting, subtractedLighting, _CascadeShadowStrength);
+	return min(bakedLighting, subtractedLighting);
+}
+
 struct VertexInput
 {
     float4 pos : POSITION;
@@ -422,6 +456,9 @@ float3 GlobalIllumination(VertexOutput input, LitSurface surface)
 {
     #if defined(LIGHTMAP_ON)
         float3 gi = SampleLightmap(input.lightmapUV);
+		#if defined(_SUBTRACTIVE_LIGHTING)
+			gi = SubtractiveLighting(surface, gi);
+		#endif
 		#if defined(DYNAMICLIGHTMAP_ON)
 			gi += SampleDynamicLightmap(input.dynamicLightmapUV);
 		#endif
@@ -441,7 +478,7 @@ float4 BakedShadows(VertexOutput input, LitSurface surface)
 			return SAMPLE_TEXTURE2D(
 				unity_ShadowMask, samplerunity_ShadowMask, input.lightmapUV);
 		#endif
-	#elif defined(_SHADOWMASK) || defined(_DISTANCE_SHADOWMASK)
+	#elif defined(_SHADOWMASK) || defined(_DISTANCE_SHADOWMASK) || defined(_SUBTRACTIVE_LIGHTING)
 		if (unity_ProbeVolumeParams.x)
 		{
 			return SampleProbeOcclusion(
@@ -517,9 +554,11 @@ float4 LitPassFragment(VertexOutput input, FRONT_FACE_TYPE isFrontFace : FRONT_F
     float3 color = input.vertexLighting * surface.diffuse;
 
     #if defined(_CASCADE_SHADOWS_HARD) || defined(_CASCADE_SHADOWS_SOFT)
-		float shadowAttenuation = MixRealtimeAndBakedShadowAttenuation(
-			CascadeShadowAttenuation(surface.position), bakedShadows, 0, surface.position, true);
-		color += MainLight(surface, shadowAttenuation);
+		#if !(defined(LIGHTMAP_ON) && defined(_SUBTRACTIVE_LIGHTING))
+			float shadowAttenuation = MixRealtimeAndBakedShadowAttenuation(
+				CascadeShadowAttenuation(surface.position), bakedShadows, 0, surface.position, true);
+			color += MainLight(surface, shadowAttenuation);
+		#endif
 	#endif
 
     for(int i = 0; i < min(unity_LightIndicesOffsetAndCount.y, 4); i++)

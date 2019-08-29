@@ -38,7 +38,7 @@
 			#pragma multi_compile _ _SHADOWS_HARD
 			#pragma multi_compile _ LIGHTMAP_ON
 			#pragma multi_compile _ DYNAMICLIGHTMAP_ON
-			#pragma multi_compile _ _SHADOWMASK _DISTANCE_SHADOWMASK
+			#pragma multi_compile _ _SHADOWMASK _DISTANCE_SHADOWMASK _SUBTRACTIVE_LIGHTING
 
 			#pragma vertex LitPassVertex
 			#pragma fragment LitPassFragment
