@@ -21,9 +21,27 @@ public class InstancedMaterialProperties : MonoBehaviour
     [SerializeField, ColorUsage(false, true)]
     Color emissionColor = Color.black;
 
+    [SerializeField]
+    float pulseEmissionFreqency;
+
     void Awake()
     {
         OnValidate();
+        if (pulseEmissionFreqency <= 0f)
+        {
+            enabled = false;
+        }
+    }
+
+    void Update()
+    {
+        Color originalEmissionColor = emissionColor;
+        emissionColor *= 0.5f +
+            0.5f * Mathf.Cos(2f * Mathf.PI * pulseEmissionFreqency * Time.time);
+        OnValidate();
+        //GetComponent<MeshRenderer>().UpdateGIMaterials();// cause a meta pass
+        DynamicGI.SetEmissive(GetComponent<MeshRenderer>(), emissionColor);// just set a uniform color (faster)
+        emissionColor = originalEmissionColor;
     }
 
     void OnValidate()

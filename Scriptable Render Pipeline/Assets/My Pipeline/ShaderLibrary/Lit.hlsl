@@ -13,7 +13,7 @@ CBUFFER_START(UnityPerDraw)
     float4x4 unity_ObjectToWorld, unity_WorldToObject;
     float4 unity_LightIndicesOffsetAndCount;
     float4 unity_4LightIndices0, unity_4LightIndices1;
-    float4 unity_LightmapST;
+    float4 unity_LightmapST, unity_DynamicLightmapST;
 
 	float4 unity_SHAr, unity_SHAg, unity_SHAb;
 	float4 unity_SHBr, unity_SHBg, unity_SHBb;
@@ -83,6 +83,9 @@ SAMPLER(sampler_MainTex);
 
 TEXTURE2D(unity_Lightmap);
 SAMPLER(samplerunity_Lightmap);
+
+TEXTURE2D(unity_DynamicLightmap);
+SAMPLER(samplerunity_DynamicLightmap);
 
 TEXTURE3D_FLOAT(unity_ProbeVolumeSH);
 SAMPLER(samplerunity_ProbeVolumeSH);
@@ -304,6 +307,17 @@ float3 SampleLightmap(float2 uv)
 
 }
 
+float3 SampleDynamicLightmap(float2 uv)
+{
+	return SampleSingleLightmap(
+		TEXTURE2D_PARAM(unity_DynamicLightmap, samplerunity_DynamicLightmap), uv,
+		float4(1, 1, 0, 0),
+		false,
+		float4(LIGHTMAP_HDR_MULTIPLIER, LIGHTMAP_HDR_EXPONENT, 0.0, 0.0) // dont know why LIGHTMAP_HDR_MULTIPLIER is not defined
+	);
+
+}
+
 float3 SampleLightProbes(LitSurface s)
 {
 	if (unity_ProbeVolumeParams.x)
@@ -334,7 +348,8 @@ struct VertexInput
     float4 pos : POSITION;
     float3 normal : NORMAL;
     float2 uv : TEXCOORD0;
-    float2 lightmapUV : TEXCOORD1;
+	float2 lightmapUV : TEXCOORD1;
+	float2 dynamicLightmapUV : TEXCOORD2;
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
@@ -348,13 +363,22 @@ struct VertexOutput
     #if defined(LIGHTMAP_ON)
         float2 lightmapUV : TEXCOORD4;
     #endif
+	#if defined(DYNAMICLIGHTMAP_ON)
+		float2 dynamicLightmapUV : TEXCOORD5;
+	#endif
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
 float3 GlobalIllumination(VertexOutput input, LitSurface surface)
 {
     #if defined(LIGHTMAP_ON)
-        return SampleLightmap(input.lightmapUV);
+        float3 gi = SampleLightmap(input.lightmapUV);
+		#if defined(DYNAMICLIGHTMAP_ON)
+			gi += SampleDynamicLightmap(input.dynamicLightmapUV);
+		#endif
+		return gi;
+	#elif defined(DYNAMICLIGHTMAP_ON)
+		return SampleDynamicLightmap(input.dynamicLightmapUV);
 	#else
 		return SampleLightProbes(surface);
     #endif
@@ -388,6 +412,10 @@ VertexOutput LitPassVertex(VertexInput input)
         output.lightmapUV = input.lightmapUV.xy * unity_LightmapST.xy + unity_LightmapST.zw;
     #endif
 
+	#if defined(DYNAMICLIGHTMAP_ON)
+		output.dynamicLightmapUV = input.dynamicLightmapUV.xy * unity_DynamicLightmapST.xy + unity_DynamicLightmapST.zw;
+	#endif
+
     return output;
 }
 
@@ -399,7 +427,7 @@ float4 LitPassFragment(VertexOutput input, FRONT_FACE_TYPE isFrontFace : FRONT_F
 
     float4 albedoAlpha = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, input.uv);
     albedoAlpha *= UNITY_ACCESS_INSTANCED_PROP(PerInstance, _Color);
-#if defined(_CLIPPING_ON)
+	#if defined(_CLIPPING_ON)
     clip(albedoAlpha.a - _Cutoff);
     #endif
 
@@ -431,6 +459,7 @@ float4 LitPassFragment(VertexOutput input, FRONT_FACE_TYPE isFrontFace : FRONT_F
 
     color += ReflectEnvironment(surface, SampleEnvironment(surface));
 
+	return float4(GlobalIllumination(input, surface), albedoAlpha.a);
     color += GlobalIllumination(input, surface) * surface.diffuse;
 	color += UNITY_ACCESS_INSTANCED_PROP(PerInstance, _EmissionColor).rgb;
     return float4(color, albedoAlpha.a);
