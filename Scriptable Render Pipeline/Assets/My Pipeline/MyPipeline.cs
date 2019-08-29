@@ -69,7 +69,9 @@ public class MyPipeline : RenderPipeline
     Matrix4x4[] worldToShadowCascadeMatrices = new Matrix4x4[5];
     Vector4[] cascadeCullingSpheres = new Vector4[4];
 
-    public MyPipeline(bool dynamicBatching, bool instancing, int shadowMapSize, float shadowDistance, int shadowCascades, Vector3 shadowCascadesSplit)
+    Vector4 globalShadowData;
+
+    public MyPipeline(bool dynamicBatching, bool instancing, int shadowMapSize, float shadowDistance, float shadowFadeRange, int shadowCascades, Vector3 shadowCascadesSplit)
     {
         GraphicsSettings.lightsUseLinearIntensity = true;
         //Debug.Log("GraphicsSettings.lightsUseLinearIntensity " + GraphicsSettings.lightsUseLinearIntensity);
@@ -87,6 +89,7 @@ public class MyPipeline : RenderPipeline
         }
         this.shadowMapSize = shadowMapSize;
         this.shadowDistance = shadowDistance;
+        globalShadowData.y = 1f / shadowFadeRange;
         this.shadowCascades = shadowCascades;
         this.shadowCascadesSplit = shadowCascadesSplit;
 
@@ -169,10 +172,10 @@ public class MyPipeline : RenderPipeline
 
         float tileSize = shadowMapSize / split;
         float tileScale = 1f / split;
-
+        globalShadowData.x = tileScale;
         shadowMap = SetShadowRenderTarget();
         shadowBuffer.BeginSample("Render Shadows");
-        shadowBuffer.SetGlobalVector(globalShadowDataID, new Vector4(tileScale, shadowDistance * shadowDistance));
+        //shadowBuffer.SetGlobalVector(globalShadowDataID, new Vector4(tileScale, shadowDistance * shadowDistance));
         context.ExecuteCommandBuffer(shadowBuffer);
         shadowBuffer.Clear();
 
@@ -266,7 +269,7 @@ public class MyPipeline : RenderPipeline
         float tileSize = shadowMapSize / 2;
         cascadeShadowMap = SetShadowRenderTarget();
         shadowBuffer.BeginSample("Render Shadows");
-        shadowBuffer.SetGlobalVector(globalShadowDataID, new Vector4(0f, shadowDistance * shadowDistance));
+        //shadowBuffer.SetGlobalVector(globalShadowDataID, new Vector4(0f, shadowDistance * shadowDistance));
         context.ExecuteCommandBuffer(shadowBuffer);
         shadowBuffer.Clear();
 
@@ -394,6 +397,8 @@ public class MyPipeline : RenderPipeline
         cameraBuffer.SetGlobalVectorArray(visibleLightDirectionOrPositionID, visibleLightDirectionsOrPositions);
         cameraBuffer.SetGlobalVectorArray(visibleLightAttenuationsID, visibleLightAttenuations);
         cameraBuffer.SetGlobalVectorArray(visibleLightSpotDirectionID, visibleLightSpotDirections);
+        globalShadowData.z = 1f - cullingParameters.shadowDistance * globalShadowData.y;
+        cameraBuffer.SetGlobalVector(globalShadowDataID, globalShadowData);
         context.ExecuteCommandBuffer(cameraBuffer);
         cameraBuffer.Clear();
 

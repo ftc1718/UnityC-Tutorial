@@ -33,6 +33,8 @@ public class MyPipelineAsset : RenderPipelineAsset
     [SerializeField]
     float shadowDistance = 100f;
     [SerializeField]
+    float shadowFadeRange = 1f;
+    [SerializeField]
     bool dynamicBatching;
     [SerializeField]
     bool instancing;
@@ -40,6 +42,6 @@ public class MyPipelineAsset : RenderPipelineAsset
     protected override IRenderPipeline InternalCreatePipeline()
 	{
         Vector3 shadowCascadesSplit = shadowCascades == ShadowCascades.Four ? fourCascadesSplit : new Vector3(twoCascadesSplit, 0f);
-        return new MyPipeline(dynamicBatching, instancing, (int)shadowMapSize, shadowDistance, (int)shadowCascades, shadowCascadesSplit);
+        return new MyPipeline(dynamicBatching, instancing, (int)shadowMapSize, shadowDistance, shadowFadeRange, (int)shadowCascades, shadowCascadesSplit);
     }
 }

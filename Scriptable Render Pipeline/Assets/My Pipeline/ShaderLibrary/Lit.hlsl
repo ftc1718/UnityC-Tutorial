@@ -108,10 +108,28 @@ float3 BoxProjection(
     return direction;
 }
 
-float DistanceToCameraSqr(float3 worldPos)
+//float DistanceToCameraSqr(float3 worldPos)
+//{
+//	float3 cameraToFragment = worldPos - _WorldSpaceCameraPos;
+//	return dot(cameraToFragment, cameraToFragment);
+//}
+
+float RealtimeToBakedShadowsInterpolator(float3 worldPos)
 {
-	float3 cameraToFragment = worldPos - _WorldSpaceCameraPos;
-	return dot(cameraToFragment, cameraToFragment);
+	float d = distance(worldPos, _WorldSpaceCameraPos);
+	return saturate(d * _GlobalShadowData.y + _GlobalShadowData.z);
+}
+
+float MixRealtimeAndBakedShadowAttenuation(float realtime, float3 worldPos)
+{
+	float t = RealtimeToBakedShadowsInterpolator(worldPos);
+	float fadedRealtime = saturate(realtime + t);
+	return fadedRealtime;
+}
+
+bool SkipRealtimeShadows(float3 worldPos)
+{
+	return RealtimeToBakedShadowsInterpolator(worldPos) >= 1.0;
 }
 
 float InsideCascadeCullingSphere(int index, float3 worldPos)
@@ -183,7 +201,7 @@ float ShadowAttenuation(int index, float3 worldPos)
 	#elif !defined(_SHADOWS_HARD) && !defined(_SHADOWS_SOFT)
 		return 1.0;
 	#endif
-	if (_ShadowData[index].x <= 0 || DistanceToCameraSqr(worldPos) > _GlobalShadowData.y)
+	if (_ShadowData[index].x <= 0 || SkipRealtimeShadows(worldPos))
 	{
 		return 1.0;
 	}
@@ -221,7 +239,7 @@ float CascadeShadowAttenuation(float3 worldPos)
         return 1.0;
     #endif
 
-    if (DistanceToCameraSqr(worldPos) > _GlobalShadowData.y)
+    if (SkipRealtimeShadows(worldPos))
     {
         return 1.0;
     }
@@ -250,9 +268,9 @@ float CascadeShadowAttenuation(float3 worldPos)
     return lerp(1, attenuation, _CascadeShadowStrength);
 }
 
-float3 MainLight(LitSurface s)
+float3 MainLight(LitSurface s, float shadowAttenuation)
 {
-    float shadowAttenuation = CascadeShadowAttenuation(s.position);
+    //float shadowAttenuation = CascadeShadowAttenuation(s.position);
     float3 lightColor = _VisibleLightColors[0].rgb;
     float3 lightDirection = _VisibleLightDirectionsOrPositions[0].xyz;
     float3 color = LightSurface(s, lightDirection);
@@ -444,13 +462,17 @@ float4 LitPassFragment(VertexOutput input, FRONT_FACE_TYPE isFrontFace : FRONT_F
     float3 color = input.vertexLighting * surface.diffuse;
 
     #if defined(_CASCADE_SHADOWS_HARD) || defined(_CASCADE_SHADOWS_SOFT)
-		color += MainLight(surface);
+		float shadowAttenuation = MixRealtimeAndBakedShadowAttenuation(
+			CascadeShadowAttenuation(surface.position), surface.position);
+		color += MainLight(surface, shadowAttenuation);
 	#endif
 
     for(int i = 0; i < min(unity_LightIndicesOffsetAndCount.y, 4); i++)
     {
         int lightIndex = unity_4LightIndices0[i];
-		float shadowAttenuation = ShadowAttenuation(i, input.worldPos);
+		//float shadowAttenuation = ShadowAttenuation(lightIndex, input.worldPos);
+		float shadowAttenuation = MixRealtimeAndBakedShadowAttenuation(
+			ShadowAttenuation(lightIndex, surface.position), surface.position);
         color += GenericLight(lightIndex, surface, shadowAttenuation);
     }
 
