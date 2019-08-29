@@ -14,6 +14,7 @@ CBUFFER_START(UnityPerDraw)
     float4 unity_LightIndicesOffsetAndCount;
     float4 unity_4LightIndices0, unity_4LightIndices1;
     float4 unity_LightmapST, unity_DynamicLightmapST;
+	float4 unity_ProbesOcclusion;
 
 	float4 unity_SHAr, unity_SHAg, unity_SHAb;
 	float4 unity_SHBr, unity_SHBg, unity_SHBb;
@@ -33,6 +34,7 @@ CBUFFER_START(_LightBuffer)
     float4 _VisibleLightDirectionsOrPositions[MAX_VISIBLE_LIGHTS];
     float4 _VisibleLightAttenuations[MAX_VISIBLE_LIGHTS];
     float4 _VisibleLightSpotDirections[MAX_VISIBLE_LIGHTS];
+	float4 _VisibleLightOcclusionMasks[MAX_VISIBLE_LIGHTS];
 CBUFFER_END
 
 CBUFFER_START(UnityProbeVolume)
@@ -64,6 +66,13 @@ CBUFFER_END
 
 #define UNITY_MATRIX_M unity_ObjectToWorld
 #define UNITY_MATRIX_I_M unity_WorldToObject
+
+#if !defined(LIGHTMAP_ON)
+	#if defined(_SHADOWMASK) || defined(_DISTANCE_SHADOWMASK)
+		#define SHADOWS_SHADOWMASK
+	#endif
+#endif
+
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/UnityInstancing.hlsl"
 
 UNITY_INSTANCING_BUFFER_START(PerInstance)
@@ -86,6 +95,9 @@ SAMPLER(samplerunity_Lightmap);
 
 TEXTURE2D(unity_DynamicLightmap);
 SAMPLER(samplerunity_DynamicLightmap);
+
+TEXTURE2D(unity_ShadowMask);
+SAMPLER(samplerunity_ShadowMask);
 
 TEXTURE3D_FLOAT(unity_ProbeVolumeSH);
 SAMPLER(samplerunity_ProbeVolumeSH);
@@ -120,10 +132,29 @@ float RealtimeToBakedShadowsInterpolator(float3 worldPos)
 	return saturate(d * _GlobalShadowData.y + _GlobalShadowData.z);
 }
 
-float MixRealtimeAndBakedShadowAttenuation(float realtime, float3 worldPos)
+float MixRealtimeAndBakedShadowAttenuation(float realtime, float4 bakedShadows, int lightIndex, float3 worldPos, bool isMainLight = false)
 {
 	float t = RealtimeToBakedShadowsInterpolator(worldPos);
 	float fadedRealtime = saturate(realtime + t);
+	float4 occlusionMask = _VisibleLightOcclusionMasks[lightIndex];
+	float baked = dot(bakedShadows, occlusionMask);
+	bool hasBakedShadows = occlusionMask.x >= 0.0;
+	#if defined(_SHADOWMASK)
+		if (hasBakedShadows)
+		{
+			return min(baked, fadedRealtime);
+		}
+	#elif defined(_DISTANCE_SHADOWMASK)
+		if (hasBakedShadows)
+		{
+			bool bakedOnly = _VisibleLightSpotDirections[lightIndex].w > 0.0;
+			if (!isMainLight && bakedOnly)
+			{
+				return baked;
+			}
+			return lerp(realtime, baked, t);
+		}
+	#endif
 	return fadedRealtime;
 }
 
@@ -403,6 +434,28 @@ float3 GlobalIllumination(VertexOutput input, LitSurface surface)
     //return 0;
 }
 
+float4 BakedShadows(VertexOutput input, LitSurface surface)
+{
+	#if defined(LIGHTMAP_ON)
+		#if defined(_SHADOWMASK) || defined(_DISTANCE_SHADOWMASK)
+			return SAMPLE_TEXTURE2D(
+				unity_ShadowMask, samplerunity_ShadowMask, input.lightmapUV);
+		#endif
+	#elif defined(_SHADOWMASK) || defined(_DISTANCE_SHADOWMASK)
+		if (unity_ProbeVolumeParams.x)
+		{
+			return SampleProbeOcclusion(
+				TEXTURE3D_PARAM(unity_ProbeVolumeSH, samplerunity_ProbeVolumeSH),
+				surface.position, unity_ProbeVolumeWorldToObject,
+				unity_ProbeVolumeParams.y, unity_ProbeVolumeParams.z,
+				unity_ProbeVolumeMin, unity_ProbeVolumeSizeInv
+			);
+		}
+		return unity_ProbesOcclusion;
+	#endif
+	return 1.0;
+}
+
 VertexOutput LitPassVertex(VertexInput input)
 {
     VertexOutput output;
@@ -459,11 +512,13 @@ float4 LitPassFragment(VertexOutput input, FRONT_FACE_TYPE isFrontFace : FRONT_F
 	#endif
 
     // float diffuseLight = saturate(dot(input.normal, float3(0, 1, 0)));
+	float4 bakedShadows = BakedShadows(input, surface);
+
     float3 color = input.vertexLighting * surface.diffuse;
 
     #if defined(_CASCADE_SHADOWS_HARD) || defined(_CASCADE_SHADOWS_SOFT)
 		float shadowAttenuation = MixRealtimeAndBakedShadowAttenuation(
-			CascadeShadowAttenuation(surface.position), surface.position);
+			CascadeShadowAttenuation(surface.position), bakedShadows, 0, surface.position, true);
 		color += MainLight(surface, shadowAttenuation);
 	#endif
 
@@ -472,7 +527,7 @@ float4 LitPassFragment(VertexOutput input, FRONT_FACE_TYPE isFrontFace : FRONT_F
         int lightIndex = unity_4LightIndices0[i];
 		//float shadowAttenuation = ShadowAttenuation(lightIndex, input.worldPos);
 		float shadowAttenuation = MixRealtimeAndBakedShadowAttenuation(
-			ShadowAttenuation(lightIndex, surface.position), surface.position);
+			ShadowAttenuation(lightIndex, surface.position), bakedShadows, lightIndex, surface.position);
         color += GenericLight(lightIndex, surface, shadowAttenuation);
     }
 
