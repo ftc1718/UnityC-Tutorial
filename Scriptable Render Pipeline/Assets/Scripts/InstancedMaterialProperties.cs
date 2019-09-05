@@ -24,6 +24,8 @@ public class InstancedMaterialProperties : MonoBehaviour
     [SerializeField]
     float pulseEmissionFreqency;
 
+    public float num = 0.1f;
+
     void Awake()
     {
         OnValidate();

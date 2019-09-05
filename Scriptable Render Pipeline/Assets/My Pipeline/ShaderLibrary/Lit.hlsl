@@ -11,6 +11,7 @@
 
 CBUFFER_START(UnityPerDraw)
     float4x4 unity_ObjectToWorld, unity_WorldToObject;
+	float4 unity_LODFade;
     float4 unity_LightIndicesOffsetAndCount;
     float4 unity_4LightIndices0, unity_4LightIndices1;
     float4 unity_LightmapST, unity_DynamicLightmapST;
@@ -58,6 +59,7 @@ CBUFFER_END
 
 CBUFFER_START(UnityPerFrame)
     float4x4 unity_MatrixVP;
+	float4 _DitherTexture_ST;
 CBUFFER_END
 
 CBUFFER_START(UnityPerMaterial)
@@ -102,6 +104,9 @@ SAMPLER(samplerunity_ShadowMask);
 
 TEXTURE3D_FLOAT(unity_ProbeVolumeSH);
 SAMPLER(samplerunity_ProbeVolumeSH);
+
+TEXTURE2D(_DitherTexture);
+SAMPLER(sampler_DitherTexture);
 
 real4 unity_Lightmap_HDR;
 
@@ -426,6 +431,17 @@ float3 SubtractiveLighting(LitSurface s, float3 bakedLighting)
 	return min(bakedLighting, subtractedLighting);
 }
 
+void LODCrossFadeClip(float4 clipPos)
+{
+	float2 ditherUV = TRANSFORM_TEX(clipPos.xy, _DitherTexture);
+	float lodClipBias = SAMPLE_TEXTURE2D(_DitherTexture, sampler_DitherTexture, ditherUV).a;
+	if (unity_LODFade.x < 0.5)
+	{
+		lodClipBias = 1.0 - lodClipBias;
+	}
+	clip(unity_LODFade.x - lodClipBias);
+}
+
 struct VertexInput
 {
     float4 pos : POSITION;
@@ -530,6 +546,9 @@ VertexOutput LitPassVertex(VertexInput input)
 float4 LitPassFragment(VertexOutput input, FRONT_FACE_TYPE isFrontFace : FRONT_FACE_SEMANTIC) : SV_TARGET
 {
     UNITY_SETUP_INSTANCE_ID(input);
+	#if defined(LOD_FADE_CROSSFADE)
+		LODCrossFadeClip(input.clipPos);
+	#endif
     input.normal = normalize(input.normal);
     input.normal = IS_FRONT_VFACE(isFrontFace, input.normal, -input.normal);
 
@@ -571,7 +590,7 @@ float4 LitPassFragment(VertexOutput input, FRONT_FACE_TYPE isFrontFace : FRONT_F
     }
 
     // diffuseLight = saturate(dot(input.normal, float3(0, 1,0)));
-    color *= albedoAlpha.rgb;
+    //color *= albedoAlpha.rgb;
 
     color += ReflectEnvironment(surface, SampleEnvironment(surface));
 

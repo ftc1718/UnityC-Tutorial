@@ -17,6 +17,8 @@ public class MyPipeline : RenderPipeline
     int shadowCascades;
     Vector3 shadowCascadesSplit;
 
+    Texture2D ditherTexture;
+
     bool mainLightExist;
 
     CommandBuffer cameraBuffer = new CommandBuffer
@@ -87,7 +89,10 @@ public class MyPipeline : RenderPipeline
 
     Vector4 globalShadowData;
 
-    public MyPipeline(bool dynamicBatching, bool instancing, int shadowMapSize, float shadowDistance, float shadowFadeRange, int shadowCascades, Vector3 shadowCascadesSplit)
+    static int ditherTextureID = Shader.PropertyToID("_DitherTexture");
+    static int ditherTextureSTID = Shader.PropertyToID("_DitherTexture_ST");
+
+    public MyPipeline(bool dynamicBatching, Texture2D ditherTexture, bool instancing, int shadowMapSize, float shadowDistance, float shadowFadeRange, int shadowCascades, Vector3 shadowCascadesSplit)
     {
         GraphicsSettings.lightsUseLinearIntensity = true;
         //Debug.Log("GraphicsSettings.lightsUseLinearIntensity " + GraphicsSettings.lightsUseLinearIntensity);
@@ -108,6 +113,7 @@ public class MyPipeline : RenderPipeline
         globalShadowData.y = 1f / shadowFadeRange;
         this.shadowCascades = shadowCascades;
         this.shadowCascadesSplit = shadowCascadesSplit;
+        this.ditherTexture = ditherTexture;
 
 #if UNITY_EDITOR
         Lightmapping.SetDelegate(lightmappingLightsDelegate);
@@ -340,9 +346,20 @@ public class MyPipeline : RenderPipeline
         shadowBuffer.Clear();
     }
 
+    void ConfigureDitherPattern(ScriptableRenderContext context)
+    {
+        cameraBuffer.SetGlobalTexture(ditherTextureID, ditherTexture);
+        cameraBuffer.SetGlobalVector(ditherTextureSTID, new Vector4(1f / 64f, 1f / 64f, 0f, 0f));
+        context.ExecuteCommandBuffer(cameraBuffer);
+        cameraBuffer.Clear();
+    }
+
     public override void Render(ScriptableRenderContext renderContext, Camera[] cameras)
     {
         base.Render(renderContext, cameras);
+
+        ConfigureDitherPattern(renderContext);
+
         foreach (var camera in cameras)
         {
             Render(renderContext, camera);

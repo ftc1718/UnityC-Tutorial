@@ -4,11 +4,13 @@
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl"
 
 CBUFFER_START(UnityPerFrame)
-float4x4 unity_MatrixVP;
+	float4x4 unity_MatrixVP;
+	float4 _DitherTexture_ST;
 CBUFFER_END
 
 CBUFFER_START(UnityPerDraw)
     float4x4 unity_ObjectToWorld;
+	float4 unity_LODFade;
 CBUFFER_END
 
 CBUFFER_START(_ShadowCasterBuffer)
@@ -23,12 +25,26 @@ CBUFFER_END
 TEXTURE2D(_MainTex);
 SAMPLER(sampler_MainTex);
 
+TEXTURE2D(_DitherTexture);
+SAMPLER(sampler_DitherTexture);
+
 #define UNITY_MATRIX_M unity_ObjectToWorld
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/UnityInstancing.hlsl"
 
 UNITY_INSTANCING_BUFFER_START(PerInstance)
 	UNITY_DEFINE_INSTANCED_PROP(float4, _Color)
 UNITY_INSTANCING_BUFFER_END(PerInstance)
+
+void LODCrossFadeClip(float4 clipPos)
+{
+	float2 ditherUV = TRANSFORM_TEX(clipPos.xy, _DitherTexture);
+	float lodClipBias = SAMPLE_TEXTURE2D(_DitherTexture, sampler_DitherTexture, ditherUV).a;
+	if (unity_LODFade.x < 0.5)
+	{
+		lodClipBias = 1.0 - lodClipBias;
+	}
+	clip(unity_LODFade.x - lodClipBias);
+}
 
 struct VertexInput
 {
@@ -70,6 +86,11 @@ VertexOutput ShadowCasterPassVertex(VertexInput input)
 float4 ShadowCasterPassFragment(VertexOutput input) : SV_TARGET
 {
     UNITY_SETUP_INSTANCE_ID(input);
+
+	#if defined(LOD_FADE_CROSSFADE)
+		LODCrossFadeClip(input.clipPos);
+	#endif
+
     #if !defined(_CLIPPING_OFF)
     float alpha = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, input.uv).a;
     alpha *= UNITY_ACCESS_INSTANCED_PROP(PerInstance, _Color).a;

@@ -38,10 +38,12 @@ public class MyPipelineAsset : RenderPipelineAsset
     bool dynamicBatching;
     [SerializeField]
     bool instancing;
+    [SerializeField]
+    Texture2D ditherTexture = null;
 
     protected override IRenderPipeline InternalCreatePipeline()
 	{
         Vector3 shadowCascadesSplit = shadowCascades == ShadowCascades.Four ? fourCascadesSplit : new Vector3(twoCascadesSplit, 0f);
-        return new MyPipeline(dynamicBatching, instancing, (int)shadowMapSize, shadowDistance, shadowFadeRange, (int)shadowCascades, shadowCascadesSplit);
+        return new MyPipeline(dynamicBatching, ditherTexture, instancing, (int)shadowMapSize, shadowDistance, shadowFadeRange, (int)shadowCascades, shadowCascadesSplit);
     }
 }
