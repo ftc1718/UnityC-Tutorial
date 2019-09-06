@@ -285,7 +285,7 @@ float CascadeShadowAttenuation(float3 worldPos, bool applyStrength = true)
 {
     #if !defined(_RECEIVE_SHADOWS)
         return 1.0;
-    #elif !defined(_CASCADE_SHADOWS_HARD) && !defined(_CASCADE_SHADOWS_SOFT)
+    #elif !defined(_CASCADED_SHADOWS_HARD) && !defined(_CASCADED_SHADOWS_SOFT)
         return 1.0;
     #endif
 
@@ -309,7 +309,7 @@ float CascadeShadowAttenuation(float3 worldPos, bool applyStrength = true)
 		_WorldToShadowCascadeMatrices[cascadeIndex], float4(worldPos, 1.0)
     );
     float attenuation;
-    #if defined(_CASCADE_SHADOWS_HARD)
+    #if defined(_CASCADED_SHADOWS_HARD)
 		attenuation = HardShadowAttenuation(shadowPos, true);
     #else
         attenuation = SoftShadowAttenuation(shadowPos, true);
@@ -572,7 +572,7 @@ float4 LitPassFragment(VertexOutput input, FRONT_FACE_TYPE isFrontFace : FRONT_F
 
     float3 color = input.vertexLighting * surface.diffuse;
 
-    #if defined(_CASCADE_SHADOWS_HARD) || defined(_CASCADE_SHADOWS_SOFT)
+    #if defined(_CASCADED_SHADOWS_HARD) || defined(_CASCADED_SHADOWS_SOFT)
 		#if !(defined(LIGHTMAP_ON) && defined(_SUBTRACTIVE_LIGHTING))
 			float shadowAttenuation = MixRealtimeAndBakedShadowAttenuation(
 				CascadeShadowAttenuation(surface.position), bakedShadows, 0, surface.position, true);

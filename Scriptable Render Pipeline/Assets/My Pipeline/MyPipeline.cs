@@ -39,8 +39,8 @@ public class MyPipeline : RenderPipeline
 
     const string shadowsSoftKeyword = "_SHADOWS_SOFT";
     const string shadowsHardKeyword = "_SHADOWS_HARD";
-    const string cascadeShadowsHardKeyword = "_CASCADE_SHADOWS_HARD";
-    const string cascadeShadowsSoftKeyword = "_CASCADE_SHADOWS_SOFT";
+    const string cascadeShadowsHardKeyword = "_CASCADED_SHADOWS_HARD";
+    const string cascadeShadowsSoftKeyword = "_CASCADED_SHADOWS_SOFT";
     const string shadowmaskKeyword = "_SHADOWMASK";
     const string distanceShadowmaskKeyword = "_DISTANCE_SHADOWMASK";
     const string subtractiveLightingKeyword = "_SUBTRACTIVE_LIGHTING";

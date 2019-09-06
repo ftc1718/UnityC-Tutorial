@@ -33,7 +33,7 @@
 			#pragma shader_feature _CLIPPING_ON
 			#pragma shader_feature _RECEIVE_SHADOWS
 
-			#pragma multi_compile _ _CASCADE_SHADOWS_SOFT _CASCADE_SHADOWS_HARD
+			#pragma multi_compile _ _CASCADED_SHADOWS_SOFT _CASCADED_SHADOWS_HARD
 			#pragma multi_compile _ _SHADOWS_SOFT
 			#pragma multi_compile _ _SHADOWS_HARD
 			#pragma multi_compile _ LIGHTMAP_ON

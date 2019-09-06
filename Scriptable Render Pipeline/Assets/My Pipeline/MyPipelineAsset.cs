@@ -42,10 +42,29 @@ public class MyPipelineAsset : RenderPipelineAsset
     Texture2D ditherTexture = null;
     [SerializeField, Range(0f, 120f)]
     float ditherAnimationSpeed = 30f;
+    [SerializeField]
+    bool supportLODCrossFading = true;
+
+    public bool HasShadowCascades
+    {
+        get
+        {
+            return shadowCascades != ShadowCascades.Zero;
+        }
+    }
+
+    public bool HasLODCrossFading
+    {
+        get
+        {
+            return supportLODCrossFading;
+        }
+    }
 
     protected override IRenderPipeline InternalCreatePipeline()
 	{
         Vector3 shadowCascadesSplit = shadowCascades == ShadowCascades.Four ? fourCascadesSplit : new Vector3(twoCascadesSplit, 0f);
         return new MyPipeline(dynamicBatching, ditherTexture, ditherAnimationSpeed, instancing, (int)shadowMapSize, shadowDistance, shadowFadeRange, (int)shadowCascades, shadowCascadesSplit);
     }
+
 }
