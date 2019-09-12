@@ -18,6 +18,7 @@ public class MyPipeline : RenderPipeline
     Vector3 shadowCascadesSplit;
 
     Texture2D ditherTexture;
+    MyPostprocessingStack defaultStack;
 
     bool mainLightExist;
 
@@ -29,6 +30,11 @@ public class MyPipeline : RenderPipeline
     CommandBuffer shadowBuffer = new CommandBuffer
     {
         name = "Render Shadows"
+    };
+
+    CommandBuffer postProcessingBuffer = new CommandBuffer
+    {
+        name = "Post-Processing"
     };
 
     Material errorMaterial;
@@ -68,6 +74,9 @@ public class MyPipeline : RenderPipeline
 
     static int visibleLightOcclusionMasksID = Shader.PropertyToID("_VisibleLightOcclusionMasks");
 
+    static int cameraColorTextureID = Shader.PropertyToID("_CameraColorTexture");
+    static int cameraDepthTextureID = Shader.PropertyToID("_CameraDepthTexture");
+
     Vector4[] visibleLightColors = new Vector4[maxVisibleLights];
     Vector4[] visibleLightDirectionsOrPositions = new Vector4[maxVisibleLights];
     Vector4[] visibleLightAttenuations = new Vector4[maxVisibleLights];
@@ -96,7 +105,7 @@ public class MyPipeline : RenderPipeline
     float lastDitherTime;
     int ditherSTIndex = -1;
 
-    public MyPipeline(bool dynamicBatching, Texture2D ditherTexture, float ditherAnimationSpeed, bool instancing, int shadowMapSize, float shadowDistance, float shadowFadeRange, int shadowCascades, Vector3 shadowCascadesSplit)
+    public MyPipeline(bool dynamicBatching, bool instancing, MyPostprocessingStack defaultStack, Texture2D ditherTexture, float ditherAnimationSpeed, int shadowMapSize, float shadowDistance, float shadowFadeRange, int shadowCascades, Vector3 shadowCascadesSplit)
     {
         GraphicsSettings.lightsUseLinearIntensity = true;
         //Debug.Log("GraphicsSettings.lightsUseLinearIntensity " + GraphicsSettings.lightsUseLinearIntensity);
@@ -112,6 +121,7 @@ public class MyPipeline : RenderPipeline
         {
             drawFlags |= DrawRendererFlags.EnableInstancing;
         }
+        this.defaultStack = defaultStack;
         this.shadowMapSize = shadowMapSize;
         this.shadowDistance = shadowDistance;
         globalShadowData.y = 1f / shadowFadeRange;
@@ -461,6 +471,14 @@ public class MyPipeline : RenderPipeline
 
 
         context.SetupCameraProperties(camera);
+        
+        if(defaultStack)
+        {
+            cameraBuffer.GetTemporaryRT(cameraColorTextureID, camera.pixelWidth, camera.pixelHeight, 0);
+            cameraBuffer.GetTemporaryRT(cameraDepthTextureID, camera.pixelWidth, camera.pixelHeight, 24, FilterMode.Point, RenderTextureFormat.Depth);
+            cameraBuffer.SetRenderTarget(cameraColorTextureID, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store, 
+                cameraDepthTextureID, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
+        }
 
         CameraClearFlags clearFlags = camera.clearFlags;
         cameraBuffer.ClearRenderTarget(
@@ -517,6 +535,15 @@ public class MyPipeline : RenderPipeline
         context.DrawRenderers(cull.visibleRenderers, ref drawSettings, filterSettings);
 
         DrawDefaultPipeline(context, camera);
+
+        if(defaultStack)
+        {
+            defaultStack.Render(postProcessingBuffer, cameraColorTextureID, cameraDepthTextureID);
+            context.ExecuteCommandBuffer(postProcessingBuffer);
+            postProcessingBuffer.Clear();
+            cameraBuffer.ReleaseTemporaryRT(cameraColorTextureID);
+            cameraBuffer.ReleaseTemporaryRT(cameraColorTextureID);
+        }
 
         cameraBuffer.EndSample("Render Camera");
         context.ExecuteCommandBuffer(cameraBuffer);
