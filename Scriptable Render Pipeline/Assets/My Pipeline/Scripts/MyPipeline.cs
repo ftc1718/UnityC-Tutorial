@@ -471,8 +471,12 @@ public class MyPipeline : RenderPipeline
 
 
         context.SetupCameraProperties(camera);
-        
-        if(defaultStack)
+
+        var myPipelineCamera = camera.GetComponent<MyPipelineCamera>();
+        MyPostprocessingStack activeStack = myPipelineCamera ?
+            myPipelineCamera.PostProcessingStack : defaultStack;
+
+        if (activeStack)
         {
             cameraBuffer.GetTemporaryRT(cameraColorTextureID, camera.pixelWidth, camera.pixelHeight, 0, FilterMode.Bilinear);
             cameraBuffer.GetTemporaryRT(cameraDepthTextureID, camera.pixelWidth, camera.pixelHeight, 24, FilterMode.Point, RenderTextureFormat.Depth);
@@ -530,19 +534,31 @@ public class MyPipeline : RenderPipeline
 
         context.DrawSkybox(camera);
 
+        if (activeStack)
+        {
+            activeStack.RenderAfterOpaque(postProcessingBuffer, cameraColorTextureID, cameraDepthTextureID, camera.pixelWidth, camera.pixelHeight);
+            context.ExecuteCommandBuffer(postProcessingBuffer);
+            postProcessingBuffer.Clear();
+
+            cameraBuffer.SetRenderTarget(cameraColorTextureID, RenderBufferLoadAction.Load, RenderBufferStoreAction.Store,
+                cameraDepthTextureID, RenderBufferLoadAction.Load, RenderBufferStoreAction.Store);
+            context.ExecuteCommandBuffer(cameraBuffer);
+            cameraBuffer.Clear();
+        }
+
         drawSettings.sorting.flags = SortFlags.CommonTransparent;
         filterSettings.renderQueueRange = RenderQueueRange.transparent;
         context.DrawRenderers(cull.visibleRenderers, ref drawSettings, filterSettings);
 
         DrawDefaultPipeline(context, camera);
 
-        if(defaultStack)
+        if(activeStack)
         {
-            defaultStack.Render(postProcessingBuffer, cameraColorTextureID, cameraDepthTextureID, camera.pixelWidth, camera.pixelHeight);
+            activeStack.RenderAfterTransparent(postProcessingBuffer, cameraColorTextureID, cameraDepthTextureID, camera.pixelWidth, camera.pixelHeight);
             context.ExecuteCommandBuffer(postProcessingBuffer);
             postProcessingBuffer.Clear();
             cameraBuffer.ReleaseTemporaryRT(cameraColorTextureID);
-            cameraBuffer.ReleaseTemporaryRT(cameraColorTextureID);
+            cameraBuffer.ReleaseTemporaryRT(cameraDepthTextureID);
         }
 
         cameraBuffer.EndSample("Render Camera");

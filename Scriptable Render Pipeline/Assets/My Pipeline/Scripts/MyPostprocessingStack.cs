@@ -6,6 +6,8 @@ public class MyPostprocessingStack : ScriptableObject
 {
     [SerializeField, Range(0, 10)]
     int blurStrength;
+    [SerializeField]
+    bool depthStripes;
 
     enum Pass { Copy, Blur, DepthStripes };
     static Mesh fullScreenTriangle;
@@ -41,11 +43,17 @@ public class MyPostprocessingStack : ScriptableObject
         };
     }
 
-    public void Render(CommandBuffer cb, int cameraColorTextureID, int cameraDepthTextureID, int width, int height)
+    public void RenderAfterOpaque(CommandBuffer cb, int cameraColorTextureID, int cameraDepthTextureID, int width, int height)
     {
         InitializeStatic();
-        DepthStripes(cb, cameraColorTextureID, cameraDepthTextureID, width, height);
+        if (depthStripes)
+        {
+            DepthStripes(cb, cameraColorTextureID, cameraDepthTextureID, width, height);
+        }
+    }
 
+    public void RenderAfterTransparent(CommandBuffer cb, int cameraColorTextureID, int cameraDepthTextureID, int width, int height)
+    {
         if(blurStrength > 0)
         {
             Blur(cb, cameraColorTextureID, width, height);

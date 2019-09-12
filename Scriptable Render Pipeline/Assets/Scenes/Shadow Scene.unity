@@ -5851,13 +5851,13 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 534669902}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2aa957cd5f40b4f4db72c7a26f1275b0, type: 3}
+  m_Script: {fileID: 11500000, guid: ce274869344021c4dabae2e88e336213, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Name: 
-  m_EditorClassIdentifier: 
+  postprocessingStack: {fileID: 11400000, guid: 9b5d64313dabefd42b2216d75e958904,
+    type: 2}
 --- !u!1 &555374811
 GameObject:
   m_ObjectHideFlags: 0
