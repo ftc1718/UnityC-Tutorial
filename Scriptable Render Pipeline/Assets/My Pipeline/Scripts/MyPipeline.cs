@@ -17,6 +17,9 @@ public class MyPipeline : RenderPipeline
     int shadowCascades;
     Vector3 shadowCascadesSplit;
 
+    float renderScale;
+    int msaaSamples;
+
     Texture2D ditherTexture;
     MyPostprocessingStack defaultStack;
 
@@ -105,7 +108,8 @@ public class MyPipeline : RenderPipeline
     float lastDitherTime;
     int ditherSTIndex = -1;
 
-    public MyPipeline(bool dynamicBatching, bool instancing, MyPostprocessingStack defaultStack, Texture2D ditherTexture, float ditherAnimationSpeed, int shadowMapSize, float shadowDistance, float shadowFadeRange, int shadowCascades, Vector3 shadowCascadesSplit)
+    public MyPipeline(bool dynamicBatching, bool instancing, MyPostprocessingStack defaultStack, Texture2D ditherTexture, float ditherAnimationSpeed,
+            int shadowMapSize, float shadowDistance, float shadowFadeRange, int shadowCascades, Vector3 shadowCascadesSplit, float renderScale, int msaaSamples)
     {
         GraphicsSettings.lightsUseLinearIntensity = true;
         //Debug.Log("GraphicsSettings.lightsUseLinearIntensity " + GraphicsSettings.lightsUseLinearIntensity);
@@ -128,6 +132,9 @@ public class MyPipeline : RenderPipeline
         this.shadowCascades = shadowCascades;
         this.shadowCascadesSplit = shadowCascadesSplit;
         this.ditherTexture = ditherTexture;
+        this.renderScale = renderScale;
+        QualitySettings.antiAliasing = msaaSamples;
+        this.msaaSamples = Mathf.Max(QualitySettings.antiAliasing, 1);
         if (ditherAnimationSpeed > 0f && Application.isPlaying)
         {
             ConfigureDitherAnimation(ditherAnimationSpeed);
@@ -476,12 +483,39 @@ public class MyPipeline : RenderPipeline
         MyPostprocessingStack activeStack = myPipelineCamera ?
             myPipelineCamera.PostProcessingStack : defaultStack;
 
-        if (activeStack)
+        bool scaledRendering = (renderScale < 1f || renderScale > 1f) && camera.cameraType == CameraType.Game;
+        int renderWidth = camera.pixelWidth;
+        int renderHeight = camera.pixelHeight;
+        if (scaledRendering)
         {
-            cameraBuffer.GetTemporaryRT(cameraColorTextureID, camera.pixelWidth, camera.pixelHeight, 0, FilterMode.Bilinear);
-            cameraBuffer.GetTemporaryRT(cameraDepthTextureID, camera.pixelWidth, camera.pixelHeight, 24, FilterMode.Point, RenderTextureFormat.Depth);
-            cameraBuffer.SetRenderTarget(cameraColorTextureID, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store, 
-                cameraDepthTextureID, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
+            renderWidth = (int)(renderWidth * renderScale);
+            renderHeight = (int)(renderHeight * renderScale);
+        }
+
+        int renderSamples = camera.allowMSAA ? msaaSamples : 1;
+        bool renderToTexture = scaledRendering || renderSamples > 1 || activeStack;
+        bool needsDepth = activeStack && activeStack.NeedsDepth;
+        bool needsDirectDepth = needsDepth && renderSamples == 1;
+        bool needsDepthOnlyPass = needsDepth && renderSamples > 1;
+
+        if (renderToTexture)
+        {
+            cameraBuffer.GetTemporaryRT(cameraColorTextureID, renderWidth, renderHeight, needsDirectDepth ? 0 : 24, FilterMode.Bilinear,
+                RenderTextureFormat.Default, RenderTextureReadWrite.Default, renderSamples);
+            if (needsDepth)
+            {
+                cameraBuffer.GetTemporaryRT(cameraDepthTextureID, renderWidth, renderHeight, 24, FilterMode.Point, RenderTextureFormat.Depth,
+                    RenderTextureReadWrite.Linear, 1);
+            }
+            if(needsDirectDepth)
+            {
+                cameraBuffer.SetRenderTarget(cameraColorTextureID, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store,
+                    cameraDepthTextureID, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
+            }
+            else
+            {
+                cameraBuffer.SetRenderTarget(cameraColorTextureID, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
+            }
         }
 
         CameraClearFlags clearFlags = camera.clearFlags;
@@ -536,12 +570,32 @@ public class MyPipeline : RenderPipeline
 
         if (activeStack)
         {
-            activeStack.RenderAfterOpaque(postProcessingBuffer, cameraColorTextureID, cameraDepthTextureID, camera.pixelWidth, camera.pixelHeight);
+            if (needsDepthOnlyPass)
+            {
+                var depthOnlyDrawSettings = new DrawRendererSettings(camera, new ShaderPassName("DepthOnly"))
+                {
+                    flags = drawFlags
+                };
+                depthOnlyDrawSettings.sorting.flags = SortFlags.CommonOpaque;
+                cameraBuffer.SetRenderTarget(cameraDepthTextureID, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
+                cameraBuffer.ClearRenderTarget(true, false, Color.clear);
+                context.ExecuteCommandBuffer(cameraBuffer);
+                cameraBuffer.Clear();
+                context.DrawRenderers(cull.visibleRenderers, ref depthOnlyDrawSettings, filterSettings);
+            }
+            activeStack.RenderAfterOpaque(postProcessingBuffer, cameraColorTextureID, cameraDepthTextureID, renderWidth, renderHeight, renderSamples);
             context.ExecuteCommandBuffer(postProcessingBuffer);
             postProcessingBuffer.Clear();
 
-            cameraBuffer.SetRenderTarget(cameraColorTextureID, RenderBufferLoadAction.Load, RenderBufferStoreAction.Store,
-                cameraDepthTextureID, RenderBufferLoadAction.Load, RenderBufferStoreAction.Store);
+            if (needsDirectDepth)
+            {
+                cameraBuffer.SetRenderTarget(cameraColorTextureID, RenderBufferLoadAction.Load, RenderBufferStoreAction.Store,
+                    cameraDepthTextureID, RenderBufferLoadAction.Load, RenderBufferStoreAction.Store);
+            }
+            else
+            {
+                cameraBuffer.SetRenderTarget(cameraColorTextureID, RenderBufferLoadAction.Load, RenderBufferStoreAction.Store);
+            }
             context.ExecuteCommandBuffer(cameraBuffer);
             cameraBuffer.Clear();
         }
@@ -552,13 +606,23 @@ public class MyPipeline : RenderPipeline
 
         DrawDefaultPipeline(context, camera);
 
-        if(activeStack)
+        if (renderToTexture)
         {
-            activeStack.RenderAfterTransparent(postProcessingBuffer, cameraColorTextureID, cameraDepthTextureID, camera.pixelWidth, camera.pixelHeight);
-            context.ExecuteCommandBuffer(postProcessingBuffer);
-            postProcessingBuffer.Clear();
+            if (activeStack)
+            {
+                activeStack.RenderAfterTransparent(postProcessingBuffer, cameraColorTextureID, cameraDepthTextureID, renderWidth, renderHeight, renderSamples);
+                context.ExecuteCommandBuffer(postProcessingBuffer);
+                postProcessingBuffer.Clear();
+            }
+            else
+            {
+                cameraBuffer.Blit(cameraColorTextureID, BuiltinRenderTextureType.CameraTarget);
+            }
             cameraBuffer.ReleaseTemporaryRT(cameraColorTextureID);
-            cameraBuffer.ReleaseTemporaryRT(cameraDepthTextureID);
+            if (needsDepth)
+            {
+                cameraBuffer.ReleaseTemporaryRT(cameraDepthTextureID);
+            }
         }
 
         cameraBuffer.EndSample("Render Camera");

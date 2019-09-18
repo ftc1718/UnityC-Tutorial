@@ -20,6 +20,14 @@ public class MyPipelineAsset : RenderPipelineAsset
         Four = 4
     }
 
+    public enum MSAAMode
+    {
+        Off = 1,
+        _2x = 2,
+        _4x = 4,
+        _8x = 8
+    }
+
     [SerializeField]
     ShadowMapSize shadowMapSize = ShadowMapSize._1024;
 
@@ -38,6 +46,10 @@ public class MyPipelineAsset : RenderPipelineAsset
     bool dynamicBatching;
     [SerializeField]
     bool instancing;
+    [SerializeField, Range(0.25f, 2f)]
+    float renderScale = 1f;
+    [SerializeField]
+    MSAAMode MSAA = MSAAMode.Off;
     [SerializeField]
     MyPostprocessingStack defaultStack;
     [SerializeField]
@@ -66,7 +78,7 @@ public class MyPipelineAsset : RenderPipelineAsset
     protected override IRenderPipeline InternalCreatePipeline()
 	{
         Vector3 shadowCascadesSplit = shadowCascades == ShadowCascades.Four ? fourCascadesSplit : new Vector3(twoCascadesSplit, 0f);
-        return new MyPipeline(dynamicBatching, instancing, defaultStack, ditherTexture, ditherAnimationSpeed, (int)shadowMapSize, shadowDistance, shadowFadeRange, (int)shadowCascades, shadowCascadesSplit);
+        return new MyPipeline(dynamicBatching, instancing, defaultStack, ditherTexture, ditherAnimationSpeed, (int)shadowMapSize, shadowDistance, shadowFadeRange, (int)shadowCascades, shadowCascadesSplit, renderScale, (int)MSAA);
     }
 
 }

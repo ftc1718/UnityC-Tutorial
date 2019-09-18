@@ -17,6 +17,11 @@ CBUFFER_START(UnityPerDraw)
     float4 unity_LightmapST, unity_DynamicLightmapST;
 	float4 unity_ProbesOcclusion;
 
+    float4 unity_SpecCube0_BoxMin, unity_SpecCube0_BoxMax;
+    float4 unity_SpecCube0_ProbePosition, unity_SpecCube0_HDR;
+    float4 unity_SpecCube1_BoxMin, unity_SpecCube1_BoxMax;
+    float4 unity_SpecCube1_ProbePosition, unity_SpecCube1_HDR;
+
 	float4 unity_SHAr, unity_SHAg, unity_SHAb;
 	float4 unity_SHBr, unity_SHBg, unity_SHBb;
 	float4 unity_SHC;
@@ -24,10 +29,6 @@ CBUFFER_END
 
 CBUFFER_START(UnityPerCamera)
 	float3 _WorldSpaceCameraPos;
-    float4 unity_SpecCube0_BoxMin, unity_SpecCube0_BoxMax;
-    float4 unity_SpecCube0_ProbePosition, unity_SpecCube0_HDR;
-    float4 unity_SpecCube1_BoxMin, unity_SpecCube1_BoxMax;
-    float4 unity_SpecCube1_ProbePosition, unity_SpecCube1_HDR;
 CBUFFER_END
 
 CBUFFER_START(_LightBuffer)

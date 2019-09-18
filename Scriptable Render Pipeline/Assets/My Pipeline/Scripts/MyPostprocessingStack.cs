@@ -9,6 +9,14 @@ public class MyPostprocessingStack : ScriptableObject
     [SerializeField]
     bool depthStripes;
 
+    public bool NeedsDepth
+    {
+        get
+        {
+            return depthStripes;
+        }
+    }
+
     enum Pass { Copy, Blur, DepthStripes };
     static Mesh fullScreenTriangle;
     static Material materail;
@@ -16,6 +24,7 @@ public class MyPostprocessingStack : ScriptableObject
     static int mainTexID = Shader.PropertyToID("_MainTex");
     static int tempTexID = Shader.PropertyToID("_MyPostProcessingStackTempTex");
     static int depthTexID = Shader.PropertyToID("_DepthTex");
+    static int resolvedTexID = Shader.PropertyToID("_MyPostProcessingStackResolvedTex");
 
     static void InitializeStatic()
     {
@@ -43,7 +52,7 @@ public class MyPostprocessingStack : ScriptableObject
         };
     }
 
-    public void RenderAfterOpaque(CommandBuffer cb, int cameraColorTextureID, int cameraDepthTextureID, int width, int height)
+    public void RenderAfterOpaque(CommandBuffer cb, int cameraColorTextureID, int cameraDepthTextureID, int width, int height, int samples)
     {
         InitializeStatic();
         if (depthStripes)
@@ -52,11 +61,21 @@ public class MyPostprocessingStack : ScriptableObject
         }
     }
 
-    public void RenderAfterTransparent(CommandBuffer cb, int cameraColorTextureID, int cameraDepthTextureID, int width, int height)
+    public void RenderAfterTransparent(CommandBuffer cb, int cameraColorTextureID, int cameraDepthTextureID, int width, int height, int samples)
     {
         if(blurStrength > 0)
         {
-            Blur(cb, cameraColorTextureID, width, height);
+            if (samples > 1)
+            {
+                cb.GetTemporaryRT(resolvedTexID, width, height, 0, FilterMode.Bilinear);
+                Blit(cb, cameraColorTextureID, resolvedTexID);
+                Blur(cb, resolvedTexID, width, height);
+                cb.ReleaseTemporaryRT(resolvedTexID);
+            }
+            else
+            {
+                Blur(cb, cameraColorTextureID, width, height);
+            }
         }
         else
         {
