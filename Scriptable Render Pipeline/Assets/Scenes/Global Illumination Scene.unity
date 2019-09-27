@@ -23,7 +23,7 @@ RenderSettings:
   m_AmbientSkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
   m_AmbientEquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
   m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
-  m_AmbientIntensity: 1
+  m_AmbientIntensity: 0
   m_AmbientMode: 0
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
   m_SkyboxMaterial: {fileID: 10304, guid: 0000000000000000f000000000000000, type: 0}
@@ -70,7 +70,7 @@ LightmapSettings:
     m_FinalGatherFiltering: 1
     m_FinalGatherRayCount: 256
     m_ReflectionCompression: 2
-    m_MixedBakeMode: 1
+    m_MixedBakeMode: 2
     m_BakeBackend: 1
     m_PVRSampling: 1
     m_PVRDirectSampleCount: 32
@@ -89,7 +89,7 @@ LightmapSettings:
     m_PVRFilteringAtrousPositionSigmaAO: 1
     m_ShowResolutionOverlay: 1
   m_LightingDataAsset: {fileID: 0}
-  m_UseShadowmask: 0
+  m_UseShadowmask: 1
 --- !u!196 &4
 NavMeshSettings:
   serializedVersion: 2
@@ -141,8 +141,8 @@ Transform:
   m_Children:
   - {fileID: 170076735}
   - {fileID: 1263421526}
-  - {fileID: 1856971959}
   - {fileID: 2047085983}
+  - {fileID: 1856971959}
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -182,7 +182,6 @@ MonoBehaviour:
   smoothness: 0.5
   emissionColor: {r: 0, g: 0, b: 0, a: 1}
   pulseEmissionFreqency: 0
-  num: 0.1
 --- !u!23 &81464335
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -292,7 +291,6 @@ MonoBehaviour:
   smoothness: 0.875
   emissionColor: {r: 0, g: 0, b: 0, a: 1}
   pulseEmissionFreqency: 0
-  num: 0.1
 --- !u!23 &106482064
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -389,7 +387,6 @@ MonoBehaviour:
   smoothness: 0.5
   emissionColor: {r: 0, g: 0, b: 0, a: 1}
   pulseEmissionFreqency: 0
-  num: 0.1
 --- !u!23 &160508555
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -541,7 +538,6 @@ MonoBehaviour:
   smoothness: 0.5
   emissionColor: {r: 0, g: 0, b: 0, a: 1}
   pulseEmissionFreqency: 0
-  num: 0.1
 --- !u!23 &295471285
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -652,7 +648,6 @@ MonoBehaviour:
   smoothness: 0.5
   emissionColor: {r: 0, g: 0, b: 0, a: 1}
   pulseEmissionFreqency: 0
-  num: 0.1
 --- !u!23 &303455919
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -748,7 +743,6 @@ MonoBehaviour:
   smoothness: 0.667
   emissionColor: {r: 0, g: 0, b: 0, a: 1}
   pulseEmissionFreqency: 0
-  num: 0.1
 --- !u!23 &442722942
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -844,7 +838,6 @@ MonoBehaviour:
   smoothness: 0.5
   emissionColor: {r: 0, g: 0, b: 0, a: 1}
   pulseEmissionFreqency: 0
-  num: 0.1
 --- !u!23 &456077624
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -926,7 +919,6 @@ MonoBehaviour:
   smoothness: 0.5
   emissionColor: {r: 0, g: 0, b: 0, a: 1}
   pulseEmissionFreqency: 0
-  num: 0.1
 --- !u!23 &457129083
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -1023,7 +1015,6 @@ MonoBehaviour:
   smoothness: 0.892
   emissionColor: {r: 0, g: 0, b: 0, a: 1}
   pulseEmissionFreqency: 0
-  num: 0.1
 --- !u!23 &496366095
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -1120,7 +1111,6 @@ MonoBehaviour:
   smoothness: 0.5
   emissionColor: {r: 0, g: 0, b: 0, a: 1}
   pulseEmissionFreqency: 0
-  num: 0.1
 --- !u!23 &502110568
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -1256,8 +1246,8 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 534669902}
-  m_LocalRotation: {x: -0.11875287, y: -0.701327, z: 0.12026546, w: -0.69251317}
-  m_LocalPosition: {x: -8.646101, y: 4.1500897, z: -2.6169608}
+  m_LocalRotation: {x: 0.20384686, y: 0.789585, z: -0.46245736, w: 0.3480448}
+  m_LocalPosition: {x: -7.6679673, y: 8.873543, z: 6.0336537}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -1311,7 +1301,6 @@ MonoBehaviour:
   smoothness: 0.5
   emissionColor: {r: 0, g: 0, b: 0, a: 1}
   pulseEmissionFreqency: 0
-  num: 0.1
 --- !u!23 &619684305
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -1422,7 +1411,6 @@ MonoBehaviour:
   smoothness: 0.867
   emissionColor: {r: 0, g: 0, b: 0, a: 1}
   pulseEmissionFreqency: 0
-  num: 0.1
 --- !u!23 &672137855
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -1518,7 +1506,6 @@ MonoBehaviour:
   smoothness: 0.5
   emissionColor: {r: 0, g: 0, b: 0, a: 1}
   pulseEmissionFreqency: 0
-  num: 0.1
 --- !u!23 &770724712
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -1600,7 +1587,6 @@ MonoBehaviour:
   smoothness: 0.5
   emissionColor: {r: 0, g: 0, b: 0, a: 1}
   pulseEmissionFreqency: 0
-  num: 0.1
 --- !u!23 &804334471
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -1767,7 +1753,6 @@ MonoBehaviour:
   smoothness: 0.5
   emissionColor: {r: 0, g: 0, b: 0, a: 1}
   pulseEmissionFreqency: 0
-  num: 0.1
 --- !u!23 &1066389392
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -1877,7 +1862,6 @@ MonoBehaviour:
   smoothness: 0.5
   emissionColor: {r: 0, g: 0, b: 0, a: 1}
   pulseEmissionFreqency: 0
-  num: 0.1
 --- !u!23 &1069684277
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -1973,7 +1957,6 @@ MonoBehaviour:
   smoothness: 0.783
   emissionColor: {r: 0, g: 0, b: 0, a: 1}
   pulseEmissionFreqency: 0
-  num: 0.1
 --- !u!23 &1131048237
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -2069,7 +2052,6 @@ MonoBehaviour:
   smoothness: 0.5
   emissionColor: {r: 0, g: 0, b: 0, a: 1}
   pulseEmissionFreqency: 0
-  num: 0.1
 --- !u!23 &1219902536
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -2165,7 +2147,6 @@ MonoBehaviour:
   smoothness: 0.692
   emissionColor: {r: 0.7075472, g: 0, b: 0, a: 1}
   pulseEmissionFreqency: 0
-  num: 0.1
 --- !u!23 &1229587498
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -2247,7 +2228,6 @@ MonoBehaviour:
   smoothness: 0.5
   emissionColor: {r: 0, g: 0, b: 0, a: 1}
   pulseEmissionFreqency: 0
-  num: 0.1
 --- !u!23 &1255143397
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -2357,7 +2337,6 @@ MonoBehaviour:
   smoothness: 0.5
   emissionColor: {r: 0, g: 0, b: 0, a: 1}
   pulseEmissionFreqency: 0
-  num: 0.1
 --- !u!23 &1263111785
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -2522,7 +2501,6 @@ MonoBehaviour:
   smoothness: 0.5
   emissionColor: {r: 0, g: 0, b: 0, a: 1}
   pulseEmissionFreqency: 0
-  num: 0.1
 --- !u!23 &1282649305
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -2619,7 +2597,6 @@ MonoBehaviour:
   smoothness: 0.5
   emissionColor: {r: 0, g: 0, b: 0, a: 1}
   pulseEmissionFreqency: 0
-  num: 0.1
 --- !u!23 &1291694004
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -2716,7 +2693,6 @@ MonoBehaviour:
   smoothness: 0.5
   emissionColor: {r: 0, g: 0, b: 0, a: 1}
   pulseEmissionFreqency: 0
-  num: 0.1
 --- !u!23 &1360142120
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -2812,7 +2788,6 @@ MonoBehaviour:
   smoothness: 0.5
   emissionColor: {r: 0, g: 0, b: 0, a: 1}
   pulseEmissionFreqency: 0
-  num: 0.1
 --- !u!23 &1401409285
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -2909,7 +2884,6 @@ MonoBehaviour:
   smoothness: 0.6
   emissionColor: {r: 0.069903344, g: 0.4811321, b: 0, a: 1}
   pulseEmissionFreqency: 0
-  num: 0.1
 --- !u!23 &1419558849
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -2991,7 +2965,6 @@ MonoBehaviour:
   smoothness: 0.5
   emissionColor: {r: 0, g: 0, b: 0, a: 1}
   pulseEmissionFreqency: 0
-  num: 0.1
 --- !u!23 &1420263010
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -3102,7 +3075,6 @@ MonoBehaviour:
   smoothness: 0.5
   emissionColor: {r: 0, g: 0, b: 0, a: 1}
   pulseEmissionFreqency: 0
-  num: 0.1
 --- !u!23 &1465745929
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -3199,7 +3171,6 @@ MonoBehaviour:
   smoothness: 0.6
   emissionColor: {r: 0, g: 0, b: 0, a: 1}
   pulseEmissionFreqency: 0
-  num: 0.1
 --- !u!23 &1470910053
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -3403,7 +3374,6 @@ MonoBehaviour:
   smoothness: 0.667
   emissionColor: {r: 0, g: 0, b: 0, a: 1}
   pulseEmissionFreqency: 0
-  num: 0.1
 --- !u!23 &1505761925
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -3513,7 +3483,6 @@ MonoBehaviour:
   smoothness: 0.875
   emissionColor: {r: 0, g: 0, b: 0, a: 1}
   pulseEmissionFreqency: 0
-  num: 0.1
 --- !u!23 &1526062446
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -3608,9 +3577,8 @@ MonoBehaviour:
   color: {r: 1, g: 1, b: 1, a: 1}
   metallic: 0
   smoothness: 0.5
-  emissionColor: {r: 1, g: 1, b: 1, a: 1}
+  emissionColor: {r: 1.9904234, g: 1.9904234, b: 1.9904234, a: 1}
   pulseEmissionFreqency: 0.2
-  num: 0.1
 --- !u!23 &1566940313
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -3706,7 +3674,6 @@ MonoBehaviour:
   smoothness: 0.892
   emissionColor: {r: 0, g: 0, b: 0, a: 1}
   pulseEmissionFreqency: 0
-  num: 0.1
 --- !u!23 &1672983961
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -3802,7 +3769,6 @@ MonoBehaviour:
   smoothness: 0.717
   emissionColor: {r: 0, g: 0, b: 0, a: 1}
   pulseEmissionFreqency: 0
-  num: 0.1
 --- !u!23 &1689726746
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -3884,7 +3850,6 @@ MonoBehaviour:
   smoothness: 0.5
   emissionColor: {r: 0, g: 0, b: 0, a: 1}
   pulseEmissionFreqency: 0
-  num: 0.1
 --- !u!23 &1704013008
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -3970,11 +3935,11 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1856971958}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -2.21, y: 3.03, z: 0.13}
+  m_LocalPosition: {x: 6.32, y: 3.03, z: 0.13}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 7560180}
-  m_RootOrder: 2
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!108 &1856971960
 Light:
@@ -3986,9 +3951,9 @@ Light:
   m_Enabled: 1
   serializedVersion: 8
   m_Type: 2
-  m_Color: {r: 0.9529412, g: 0.70537263, b: 0.67058825, a: 1}
-  m_Intensity: 6
-  m_Range: 10
+  m_Color: {r: 0.9716981, g: 0.96622336, b: 0.7746084, a: 1}
+  m_Intensity: 100
+  m_Range: 20
   m_SpotAngle: 30
   m_CookieSize: 10
   m_Shadows:
@@ -4064,7 +4029,6 @@ MonoBehaviour:
   smoothness: 0.5
   emissionColor: {r: 0, g: 0, b: 0, a: 1}
   pulseEmissionFreqency: 0
-  num: 0.1
 --- !u!23 &1870571029
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -4160,7 +4124,6 @@ MonoBehaviour:
   smoothness: 0.5
   emissionColor: {r: 0, g: 0, b: 0, a: 1}
   pulseEmissionFreqency: 0
-  num: 0.1
 --- !u!23 &1981557860
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -4256,7 +4219,6 @@ MonoBehaviour:
   smoothness: 0.5
   emissionColor: {r: 0, g: 0, b: 0, a: 1}
   pulseEmissionFreqency: 0
-  num: 0.1
 --- !u!23 &2011614820
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -4338,7 +4300,6 @@ MonoBehaviour:
   smoothness: 0.6
   emissionColor: {r: 0, g: 0, b: 0, a: 1}
   pulseEmissionFreqency: 0
-  num: 0.1
 --- !u!23 &2045219643
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -4414,7 +4375,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &2047085983
 Transform:
   m_ObjectHideFlags: 0
@@ -4422,13 +4383,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2047085982}
-  m_LocalRotation: {x: 0.42767945, y: -0.48399797, z: 0.20403148, w: 0.735668}
-  m_LocalPosition: {x: 1.98, y: 6.62, z: 3.23}
+  m_LocalRotation: {x: -0.13899723, y: -0.7987835, z: 0.45301366, w: -0.37067968}
+  m_LocalPosition: {x: -7.55, y: 7.26, z: 5.63}
   m_LocalScale: {x: 1, y: 0.9999999, z: 1.0000002}
   m_Children: []
   m_Father: {fileID: 7560180}
-  m_RootOrder: 3
-  m_LocalEulerAnglesHint: {x: 55.768, y: -72.872, z: -11.670001}
+  m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 55.768, y: -235.978, z: -11.670001}
 --- !u!108 &2047085984
 Light:
   m_ObjectHideFlags: 0
@@ -4517,7 +4478,6 @@ MonoBehaviour:
   smoothness: 0.5
   emissionColor: {r: 0, g: 0, b: 0, a: 1}
   pulseEmissionFreqency: 0
-  num: 0.1
 --- !u!23 &2089249108
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -4613,7 +4573,6 @@ MonoBehaviour:
   smoothness: 0.5
   emissionColor: {r: 0, g: 0, b: 0, a: 1}
   pulseEmissionFreqency: 0
-  num: 0.1
 --- !u!23 &2118422984
 MeshRenderer:
   m_ObjectHideFlags: 0

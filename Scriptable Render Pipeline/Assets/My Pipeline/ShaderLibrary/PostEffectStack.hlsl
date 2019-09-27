@@ -6,6 +6,8 @@
 float4 _ProjectionParams;
 float4 _ZBufferParams;
 
+float _ReinhardModifier;
+
 TEXTURE2D(_MainTex);
 SAMPLER(sampler_MainTex);
 
@@ -73,6 +75,13 @@ float4 DepthStripesPassFragment(VertexOutput input) : SV_TARGET
 		color *= pow(sin(3.14 * depth), 2.0);
 	}
 	return color;
+}
+
+float4 ToneMappingPassFragment(VertexOutput input) : SV_TARGET
+{
+	float3 color = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, input.uv).rgb;
+	color *= (1 + color * _ReinhardModifier) / (1 + color);
+	return float4(saturate(color), 1);
 }
 
 #endif // MYRP_POST_EFFECT_STACK_INCLUDED

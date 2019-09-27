@@ -21,7 +21,8 @@ MonoBehaviour:
   dynamicBatching: 0
   instancing: 1
   renderScale: 1
-  MSAA: 8
+  MSAA: 4
+  allowHDR: 1
   defaultStack: {fileID: 11400000, guid: 9b5d64313dabefd42b2216d75e958904, type: 2}
   ditherTexture: {fileID: 2800000, guid: 0ecef4211df16cc42a9ed1089db040a6, type: 3}
   ditherAnimationSpeed: 4

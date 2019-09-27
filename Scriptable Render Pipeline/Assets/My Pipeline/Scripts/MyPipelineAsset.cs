@@ -51,6 +51,8 @@ public class MyPipelineAsset : RenderPipelineAsset
     [SerializeField]
     MSAAMode MSAA = MSAAMode.Off;
     [SerializeField]
+    bool allowHDR;
+    [SerializeField]
     MyPostprocessingStack defaultStack;
     [SerializeField]
     Texture2D ditherTexture = null;
@@ -78,7 +80,8 @@ public class MyPipelineAsset : RenderPipelineAsset
     protected override IRenderPipeline InternalCreatePipeline()
 	{
         Vector3 shadowCascadesSplit = shadowCascades == ShadowCascades.Four ? fourCascadesSplit : new Vector3(twoCascadesSplit, 0f);
-        return new MyPipeline(dynamicBatching, instancing, defaultStack, ditherTexture, ditherAnimationSpeed, (int)shadowMapSize, shadowDistance, shadowFadeRange, (int)shadowCascades, shadowCascadesSplit, renderScale, (int)MSAA);
+        return new MyPipeline(dynamicBatching, instancing, defaultStack, ditherTexture, ditherAnimationSpeed,
+            (int)shadowMapSize, shadowDistance, shadowFadeRange, (int)shadowCascades, shadowCascadesSplit, renderScale, (int)MSAA, allowHDR);
     }
 
 }

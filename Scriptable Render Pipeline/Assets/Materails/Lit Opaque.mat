@@ -9,7 +9,7 @@ Material:
   m_PrefabAsset: {fileID: 0}
   m_Name: Lit Opaque
   m_Shader: {fileID: 4800000, guid: e3900a579288b934689c81088357902a, type: 3}
-  m_ShaderKeywords: _RECEIVE_SHADOWS
+  m_ShaderKeywords: _CLIPPING_OFF _RECEIVE_SHADOWS
   m_LightmapFlags: 0
   m_EnableInstancingVariants: 1
   m_DoubleSidedGI: 0

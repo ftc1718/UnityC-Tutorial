@@ -28,11 +28,21 @@
 			ENDHLSL
 		}
 
-		Pass { // 2 DepthStripes
+		Pass // 2 DepthStripes
+		{ 
 			HLSLPROGRAM
 			#pragma target 3.5
 			#pragma vertex DefaultPassVertex
 			#pragma fragment DepthStripesPassFragment
+			ENDHLSL
+		}
+
+		Pass // 3 ToneMapping
+		{ 
+			HLSLPROGRAM
+			#pragma target 3.5
+			#pragma vertex DefaultPassVertex
+			#pragma fragment ToneMappingPassFragment
 			ENDHLSL
 		}
 	}
