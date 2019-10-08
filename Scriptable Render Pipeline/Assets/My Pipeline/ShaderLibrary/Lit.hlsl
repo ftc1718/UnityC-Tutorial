@@ -202,7 +202,7 @@ float3 GenericLight(int index, LitSurface s, float shadowAttenuation)
     float3 color = LightSurface(s, lightDirection);
 
     float rangeFade = dot(lightVector, lightVector) * lightAttenuation.x;
-    rangeFade = saturate(1 - rangeFade * rangeFade);
+    rangeFade = saturate(1.0 - rangeFade * rangeFade);
     rangeFade *= rangeFade;
 
     float spotFade = dot(spotDirection, lightDirection);
@@ -427,7 +427,7 @@ float3 SubtractiveLighting(LitSurface s, float3 bakedLighting)
 	);
 	float3 shadowedLightingGuess = diffuse * (1.0 - shadowAttenuation);
 	float3 subtractedLighting = bakedLighting - shadowedLightingGuess;
-	subtractedLighting = max(subtractedLighting, _SubtractiveShadowColor);
+	subtractedLighting = max(subtractedLighting, _SubtractiveShadowColor.rgb);
 	subtractedLighting = lerp(bakedLighting, subtractedLighting, _CascadeShadowStrength);
 	return min(bakedLighting, subtractedLighting);
 }
