@@ -72,6 +72,7 @@ Material:
     - _SpecularHighlights: 1
     - _Speed: 50
     - _SrcBlend: 1
+    - _Steepness: 0.5
     - _UVSec: 0
     - _Wavelength: 100
     - _ZWrite: 1
