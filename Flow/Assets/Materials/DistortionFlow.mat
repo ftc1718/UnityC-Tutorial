@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: WaterFlow
+  m_Name: DistortionFlow
   m_Shader: {fileID: 4800000, guid: 5af397dcece9ad04aa53b8c78444008f, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
