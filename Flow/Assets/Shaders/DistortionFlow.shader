@@ -17,6 +17,7 @@
 		_HeightScaleModulated("Height Scale, Modulated", Float) = 0.75
 		_WaterFogColor("Water Fog Color", Color) = (0, 0, 0, 0)
 		_WaterFogDensity("Water Fog Density", Range(0, 2)) = 0.1
+		_RefractionStrength("Refraction Strength", Range(0, 1)) = 0.25
 		_Glossiness("Smoothness", Range(0,1)) = 0.5
 		_Metallic("Metallic", Range(0,1)) = 0.0
 	}
@@ -96,7 +97,7 @@
 			o.Metallic = _Metallic;
 			o.Smoothness = _Glossiness;
 			o.Alpha = c.a;
-			o.Emission = ColorBelowWater(IN.screenPos) * (1 - c.a);
+			o.Emission = ColorBelowWater(IN.screenPos, o.Normal) * (1 - c.a);
 		}
 		ENDCG
 	}
