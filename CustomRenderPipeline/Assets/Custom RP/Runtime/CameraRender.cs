@@ -16,7 +16,7 @@ public partial class CameraRender
         name = bufferName
     };
 
-    public void Render(ScriptableRenderContext context, Camera camera)
+    public void Render(ScriptableRenderContext context, Camera camera, bool useDynamicBatching, bool useGPUInstancing)
     {
         this.context = context;
         this.camera = camera;
@@ -29,7 +29,7 @@ public partial class CameraRender
         }
 
         Setup();
-        DrawVisibleGeometry();
+        DrawVisibleGeometry(useDynamicBatching, useGPUInstancing);
         DrawUnsupportedShaders();
         DrawGizmos();
         Submit();
@@ -57,10 +57,10 @@ public partial class CameraRender
         ExcuteBuffer();
     }
 
-    void DrawVisibleGeometry()
+    void DrawVisibleGeometry(bool useDynamicBatching, bool useGPUInstancing)
     {
         SortingSettings sortingSettings = new SortingSettings(camera) { criteria = SortingCriteria.CommonOpaque};
-        DrawingSettings drawingSettings = new DrawingSettings(unlitShaderTagId, sortingSettings);
+        DrawingSettings drawingSettings = new DrawingSettings(unlitShaderTagId, sortingSettings) { enableDynamicBatching = useDynamicBatching, enableInstancing = useGPUInstancing };
         FilteringSettings filteringSettings = new FilteringSettings(RenderQueueRange.opaque);
         context.DrawRenderers(cullingResults, ref drawingSettings, ref filteringSettings);
         context.DrawSkybox(camera);
