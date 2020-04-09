@@ -2,7 +2,7 @@
 {
     Properties
     {
-		_BaseMap("BaseMap", 2D) = "White" {}
+		_BaseMap("BaseMap", 2D) = "white" {}
 		_BaseColor("Color", Color) = (1, 1, 1, 1)
 		_Cutoff("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
 		[Toggle(_CLIPPING)] _Clipping("Alpha Clipping", Float) = 0
