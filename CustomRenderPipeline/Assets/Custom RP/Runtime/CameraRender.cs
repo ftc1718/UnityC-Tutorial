@@ -31,11 +31,15 @@ public partial class CameraRender
             return;
         }
 
-        Setup();
+        buffer.BeginSample(sampleName);
+        ExecuteBuffer();
         lighting.Setup(context, cullingResults, shadowSettings);
+        buffer.EndSample(sampleName);
+        Setup();
         DrawVisibleGeometry(useDynamicBatching, useGPUInstancing);
         DrawUnsupportedShaders();
         DrawGizmos();
+        lighting.Cleanup();
         Submit();
     }
 
@@ -59,7 +63,7 @@ public partial class CameraRender
             flags == CameraClearFlags.Color ?
 				camera.backgroundColor.linear : Color.clear);
         buffer.BeginSample(sampleName);
-        ExcuteBuffer();
+        ExecuteBuffer();
     }
 
     void DrawVisibleGeometry(bool useDynamicBatching, bool useGPUInstancing)
@@ -81,11 +85,11 @@ public partial class CameraRender
     void Submit()
     {
         buffer.EndSample(sampleName);
-        ExcuteBuffer();
+        ExecuteBuffer();
         context.Submit();
     }
 
-    void ExcuteBuffer()
+    void ExecuteBuffer()
     {
         context.ExecuteCommandBuffer(buffer);
         buffer.Clear();
